@@ -1,8 +1,13 @@
+import tkinter as tk
 import ttkbootstrap as tb
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 class App():
+    TEST_FUNCTIONS = [
+        'długa nazwa funkcji a',
+        'długa nazwa funkcji b'
+    ]
     
     def __init__(self):
         # visuals
@@ -24,7 +29,7 @@ class App():
         frame_graph = tb.Frame(root_frame)
         frame_graph.grid(row=1, column=0)
         frame_parameters = tb.Frame(root_frame)
-        frame_parameters.grid(row=1, column=1, padx=50, pady=50)
+        frame_parameters.grid(row=1, column=1, padx=50, sticky='')
         
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
@@ -44,9 +49,53 @@ class App():
         self.label_ants_number = tb.Label(frame_ants_number, text='0')
         self.label_ants_number.pack(padx=50, pady=10)
         #endregion
+
+        #region parameters
+        lframe_parameters = tb.LabelFrame(frame_parameters, text="Parameters")
+        lframe_parameters.pack(ipadx=40, ipady=60, fill='x', expand=True)
+
+        frame_x_min = tb.LabelFrame(lframe_parameters, text="Min x")
+        frame_x_min.pack(pady=10)
+        input_x_min = tb.Entry(frame_x_min, width=10)
+        input_x_min.pack(padx=10, pady=5)
+
+        frame_x_max = tb.LabelFrame(lframe_parameters, text="Max x")
+        frame_x_max.pack(pady=10)
+        input_x_max = tb.Entry(frame_x_max, width=10)
+        input_x_max.pack(padx=10, pady=5)
+
+        frame_ants_nbr = tb.LabelFrame(lframe_parameters, text="Number of ants")
+        frame_ants_nbr.pack(pady=10)
+        input_ants_nbr = tb.Entry(frame_ants_nbr, width=10)
+        input_ants_nbr.pack(padx=10, pady=5)
+
+        frame_ant_memory = tb.LabelFrame(lframe_parameters, text="Ant memory")
+        frame_ant_memory.pack(pady=10)
+        input_ant_memory = tb.Entry(frame_ant_memory, width=10)
+        input_ant_memory.pack(padx=10, pady=5) 
+
+        self.test_function_var = self.TEST_FUNCTIONS[0]
+        frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
+        frame_function.pack(pady=10)
+        for idx, fn in enumerate(self.TEST_FUNCTIONS):
+            tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn)\
+                            .pack(padx=10, pady=5)
+
+        self.auto_run_var = tk.IntVar(lframe_parameters, 1)
+        auto_run = tb.Checkbutton(lframe_parameters, text="Auto run", variable=self.auto_run_var)
+        auto_run.pack(pady=10)
+
+        frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
+        frame_speed.pack(pady=10)
+        self.speed_val = tk.IntVar(lframe_parameters, 50)
+        scale_speed = tb.Scale(frame_speed, from_=1, to=100, orient=tb.HORIZONTAL, 
+                               length=200, variable=self.speed_val)
+        scale_speed.pack(padx=10, pady=5)
+        
+        #endregion
                 
         self.root.mainloop()        
-
+        
     def update_plot(self, x: list =[], xlim: list = [], y_iter: list = [], y_rec: list = []):
         self.plot1.clear()
         self.plot1.plot(x, y_iter, label="Iterative", marker='o')
