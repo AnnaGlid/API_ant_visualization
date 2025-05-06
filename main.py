@@ -1,20 +1,21 @@
+import threading
 import tkinter as tk
 import ttkbootstrap as tb
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 class App():
-    TEST_FUNCTIONS = [
-        'długa nazwa funkcji a',
-        'długa nazwa funkcji b'
-    ]
+    TEST_FUNCTIONS = {
+        'F. Rastrigin': {},
+        'F. Schwefel': {}
+    }
     
     def __init__(self):
         # visuals
         self.root = tb.Window(themename='darkly')
-        # self.root.configure(background='#7a4930')
         self.root.title ('API ant algoritm visualization')
-        # self.defaultFont.configure(family="Calibri", size=14)
+        self.defaultFont = tk.font.nametofont("TkDefaultFont") 
+        self.defaultFont.configure(size=10)
         max_width, max_height = self.root.maxsize()
         self.root.geometry('{}x{}'.format(max_width, max_height))
         self.root.state('zoomed')
@@ -25,59 +26,58 @@ class App():
         root_frame.columnconfigure(0, weight=4)
         root_frame.columnconfigure(1, weight=1)
         top_frame = tb.Frame(root_frame)
-        top_frame.grid(column=0, row=0, columnspan=2, padx=50, pady=20)
+        top_frame.grid(column=0, row=0, columnspan=1, pady=20, sticky='e')
         frame_graph = tb.Frame(root_frame)
         frame_graph.grid(row=1, column=0)
         frame_parameters = tb.Frame(root_frame)
-        frame_parameters.grid(row=1, column=1, padx=50, sticky='')
+        frame_parameters.grid(row=1, column=1, padx=50, sticky='ns')
         
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
         self.plot1 = self.fig.add_subplot()         
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
-        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph) 
-        self.update_plot()
+        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)         
         #endregion
 
         #region top
         frame_iteration = tb.LabelFrame(top_frame, text='Iteration')
-        frame_iteration.grid(row=0, column=0, padx=50, pady=2)
+        frame_iteration.grid(row=0, column=0, padx=10, pady=2, sticky='e')
         self.label_iteration = tb.Label(frame_iteration, text=0)
         self.label_iteration.pack(padx=50, pady=10)
         frame_ants_number = tb.LabelFrame(top_frame, text="Number of ants in extremum")
-        frame_ants_number.grid(row=0, column=1, padx=50, pady=0)
+        frame_ants_number.grid(row=0, column=1, padx=10, pady=0, sticky='e')
         self.label_ants_number = tb.Label(frame_ants_number, text='0')
         self.label_ants_number.pack(padx=50, pady=10)
         #endregion
 
         #region parameters
         lframe_parameters = tb.LabelFrame(frame_parameters, text="Parameters")
-        lframe_parameters.pack(ipadx=40, ipady=60, fill='x', expand=True)
+        lframe_parameters.pack(ipadx=5, anchor='n')
 
         frame_x_min = tb.LabelFrame(lframe_parameters, text="Min x")
         frame_x_min.pack(pady=10)
-        input_x_min = tb.Entry(frame_x_min, width=10)
-        input_x_min.pack(padx=10, pady=5)
+        self.input_x_min = tb.Entry(frame_x_min, width=10)
+        self.input_x_min.pack(padx=10, pady=5)
 
         frame_x_max = tb.LabelFrame(lframe_parameters, text="Max x")
         frame_x_max.pack(pady=10)
-        input_x_max = tb.Entry(frame_x_max, width=10)
-        input_x_max.pack(padx=10, pady=5)
+        self.input_x_max = tb.Entry(frame_x_max, width=10)
+        self.input_x_max.pack(padx=10, pady=5)
 
         frame_ants_nbr = tb.LabelFrame(lframe_parameters, text="Number of ants")
         frame_ants_nbr.pack(pady=10)
-        input_ants_nbr = tb.Entry(frame_ants_nbr, width=10)
-        input_ants_nbr.pack(padx=10, pady=5)
+        self.input_ants_nbr = tb.Entry(frame_ants_nbr, width=10)
+        self.input_ants_nbr.pack(padx=10, pady=5)
 
         frame_ant_memory = tb.LabelFrame(lframe_parameters, text="Ant memory")
         frame_ant_memory.pack(pady=10)
-        input_ant_memory = tb.Entry(frame_ant_memory, width=10)
-        input_ant_memory.pack(padx=10, pady=5) 
+        self.input_ant_memory = tb.Entry(frame_ant_memory, width=10)
+        self.input_ant_memory.pack(padx=10, pady=5) 
 
-        self.test_function_var = self.TEST_FUNCTIONS[0]
+        self.test_function_var = tk.StringVar(lframe_parameters)
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
-        for idx, fn in enumerate(self.TEST_FUNCTIONS):
+        for fn in list(self.TEST_FUNCTIONS):
             tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn)\
                             .pack(padx=10, pady=5)
 
@@ -91,10 +91,62 @@ class App():
         scale_speed = tb.Scale(frame_speed, from_=1, to=100, orient=tb.HORIZONTAL, 
                                length=200, variable=self.speed_val)
         scale_speed.pack(padx=10, pady=5)
-        
+
+        reset_btn = tb.Button(lframe_parameters, text="Reset", takefocus=False, 
+                              command=self.reset_parameters, width=10)
+        reset_btn.pack(pady=(20, 5), ipadx=30, ipady=3)
+
+        self.btn_run = tb.Button(lframe_parameters, text="Run", takefocus=False, 
+                            command=self.run, width=10, style="success")
+        self.btn_parameters = {
+            "pady" :(1,15), 
+            "ipadx": 30, 
+            "ipady": 3
+        }
+        self.btn_run.pack(**self.btn_parameters)
+        self.btn_stop = tb.Button(lframe_parameters, text="Stop", takefocus=False, width=10, 
+                                  command=self.pause, style='danger')        
         #endregion
                 
+        self.exit_event = threading.Event()
+        self.reset_parameters()
         self.root.mainloop()        
+        
+    def reset_parameters(self):
+        self.update_plot()
+        self.set_text(self.input_x_min, '-1000')
+        self.set_text(self.input_x_max, '1000')
+        self.set_text(self.input_ants_nbr, '20')
+        self.set_text(self.input_ant_memory, '2')
+        self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
+        self.auto_run_var.set(1)
+        self.speed_val.set(50)
+
+    def run(self):
+        try:
+            self.exit_event.clear()
+            self.update_plot()
+            th = threading.Thread(target=self.run_algorithm, args=(algorithm,), daemon=True)
+            self.toggle_btn()
+            th.start()
+            self.wait_for_finish()
+        except Exception as ex:
+            self.exit_event.set()
+            self.show_error(ex)
+
+        self.exit_event.set()
+        self.btn_run.pack_forget()
+        self.btn_stop.pack(**self.btn_parameters)
+
+    def pause(self):
+        self.btn_stop.pack_forget()
+        self.btn_run.pack(**self.btn_parameters)        
+
+    def run_algorithm(self):
+        pass
+    def set_text(self, widget, text):
+        widget.delete(0,tk.END)
+        widget.insert(0, text)
         
     def update_plot(self, x: list =[], xlim: list = [], y_iter: list = [], y_rec: list = []):
         self.plot1.clear()
