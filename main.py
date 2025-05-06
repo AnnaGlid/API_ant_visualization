@@ -196,12 +196,15 @@ class App():
         func_data = self.TEST_FUNCTIONS[chosen_func]
         p = self.ax.plot_surface(func_data['X'], func_data['Y'], 
                                  func_data['Z'], rstride=1, cstride=1, 
-                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)        
-        self.dots._offsets3d = [0, 1, 2, 3, 4, 5], [0, 1,2,3,4,5], [0,0,0,0,0,0]
+                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)                
         self.fig.tight_layout()
         self.canvas.draw_idle()
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
 
+    def update_plot_ants(self, ants: list = [[], [], []]):
+        self.dots._offsets3d = ants
+        self.canvas.draw_idle()
+        
 app = App()
