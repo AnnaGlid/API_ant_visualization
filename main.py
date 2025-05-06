@@ -12,18 +12,36 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 class App():
+
+    ELEMENTS = 100    
+
+    r_x = np.linspace(-5.12, 5.12, ELEMENTS)
+    r_y = np.linspace(-5.12, 5.12, ELEMENTS)
+    r_X, r_Y = np.meshgrid(r_x, r_y)
+    r_Z = 10*2 + (r_X**2 - 10*np.cos(2*np.pi*r_X)) + (r_Y**2 - 10*np.cos(2*np.pi*r_Y))  
+
+    s_x = np.linspace(-500, 500, ELEMENTS)
+    s_y = np.linspace(-500, 500, ELEMENTS)
+    s_X, s_Y = np.meshgrid(s_x, s_y)
+    s_Z = - (s_X * np.sin(np.sqrt(np.abs(s_X))) + s_Y * np.sin(np.sqrt(np.abs(s_Y))))
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
             'type': 'min',
             'extremum': 0,
             'domain_min': -5.12,
-            'domain_max': 5.12
+            'domain_max': 5.12,
+            'X': r_X,
+            'Y': r_Y,
+            'Z': r_Z
         },
         'F. Schwefel': {
             'type': 'min',
             'extremum': 420.9687,
             'domain_min': -500,
-            'domain_max': 500
+            'domain_max': 500,
+            'X': s_X,
+            'Y': s_Y,
+            'Z': s_Z
         }
     }
     
@@ -180,15 +198,8 @@ class App():
     def update_plot(self):
         chosen_func = self.test_function_var.get()
         func_data = self.TEST_FUNCTIONS[chosen_func]
-        x = np.linspace(func_data['domain_min'], func_data['domain_max'], 100)
-        y = np.linspace(func_data['domain_min'], func_data['domain_max'], 100)
-        X, Y = np.meshgrid(x, y)
-        if chosen_func == 'F. Schwefel':
-            Z = - (X * np.sin(math.sqrt(abs(X))) + Y * np.sin(math.sqrt(abs(Y))))
-        elif chosen_func == 'F. Rastrigin':
-            Z = 10*2 + (X**2 - 10*np.cos(2*np.pi*X)) + (Y**2 - 10*np.cos(2*np.pi*Y))
-
-        p = self.ax.plot_surface(X, Y, Z, rstride=1, cstride=1, 
+        p = self.ax.plot_surface(func_data['X'], func_data['Y'], 
+                                 func_data['Z'], rstride=1, cstride=1, 
                                  cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
         # cb = self.fig.colorbar(p, shrink=0.5)  
