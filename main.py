@@ -1,14 +1,9 @@
 import threading
-import math
-import tkinter as tk
-import ttkbootstrap as tb
-import matplotlib.pyplot as plt
 import numpy as np
+import tkinter as tk
 from matplotlib import cm
+import ttkbootstrap as tb
 from matplotlib.figure import Figure 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 class App():
@@ -203,20 +198,6 @@ class App():
                                  func_data['Z'], rstride=1, cstride=1, 
                                  cmap=cm.coolwarm, linewidth=0, antialiased=False)        
         self.dots._offsets3d = [0, 1, 2, 3, 4, 5], [0, 1,2,3,4,5], [0,0,0,0,0,0]
-        # cb = self.fig.colorbar(p, shrink=0.5)  
-           
-        # self.plot1.clear()
-        # self.plot1.plot(x, y_iter, label="Iterative", marker='o')
-        # self.plot1.set_xlabel('x')
-        # self.plot1.set_ylabel('f(x)')
-        
-        # for xx, yy in zip(x, y_iter):
-        #     self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy),)
-        # for xx, yy in zip(x, y_rec):
-        #     self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy))
-        # self.plot1.legend()
-        # if xlim:
-        #     self.plot1.set_xlim(xlim)
         self.fig.tight_layout()
         self.canvas.draw_idle()
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
