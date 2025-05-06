@@ -135,7 +135,7 @@ class App():
         self.btn_stop = tb.Button(lframe_parameters, text="Stop", takefocus=False, width=10, 
                                   command=self.pause, style='danger')        
         #endregion
-
+        self.dots = None
         self.reset_parameters(without_plot = True)
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
@@ -151,6 +151,7 @@ class App():
     def reset_parameters(self, without_plot: bool = False):        
         # self.set_text(self.input_x_min, '-1000')
         # self.set_text(self.input_x_max, '1000')
+        self.dots = self.ax.scatter([],[],[], color='black', s=20)
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
@@ -200,8 +201,8 @@ class App():
         func_data = self.TEST_FUNCTIONS[chosen_func]
         p = self.ax.plot_surface(func_data['X'], func_data['Y'], 
                                  func_data['Z'], rstride=1, cstride=1, 
-                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)
-
+                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)        
+        self.dots._offsets3d = [0, 1, 2, 3, 4, 5], [0, 1,2,3,4,5], [0,0,0,0,0,0]
         # cb = self.fig.colorbar(p, shrink=0.5)  
            
         # self.plot1.clear()
@@ -217,7 +218,7 @@ class App():
         # if xlim:
         #     self.plot1.set_xlim(xlim)
         self.fig.tight_layout()
-        self.canvas.draw()
+        self.canvas.draw_idle()
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
