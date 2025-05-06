@@ -1,13 +1,30 @@
 import threading
 import tkinter as tk
 import ttkbootstrap as tb
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import cm
 from matplotlib.figure import Figure 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+def schwefel_fun(self):
+        pass
 
 class App():
     TEST_FUNCTIONS = {
-        'F. Rastrigin': {},
-        'F. Schwefel': {}
+        'F. Rastrigin': {
+            
+        },
+        'F. Schwefel': {
+            'type': 'min',
+            'extremum': 420.9687,
+            'domain_min': -500,
+            'domain_max': 500,
+            'func': schwefel_fun
+        }
     }
     
     def __init__(self):
@@ -34,7 +51,7 @@ class App():
         
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
-        self.plot1 = self.fig.add_subplot()         
+        self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')  
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
         self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)         
         #endregion
@@ -54,15 +71,15 @@ class App():
         lframe_parameters = tb.LabelFrame(frame_parameters, text="Parameters")
         lframe_parameters.pack(ipadx=5, anchor='n')
 
-        frame_x_min = tb.LabelFrame(lframe_parameters, text="Min x")
-        frame_x_min.pack(pady=10)
-        self.input_x_min = tb.Entry(frame_x_min, width=10)
-        self.input_x_min.pack(padx=10, pady=5)
+        # frame_x_min = tb.LabelFrame(lframe_parameters, text="Min x")
+        # frame_x_min.pack(pady=10)
+        # self.input_x_min = tb.Entry(frame_x_min, width=10)
+        # self.input_x_min.pack(padx=10, pady=5)
 
-        frame_x_max = tb.LabelFrame(lframe_parameters, text="Max x")
-        frame_x_max.pack(pady=10)
-        self.input_x_max = tb.Entry(frame_x_max, width=10)
-        self.input_x_max.pack(padx=10, pady=5)
+        # frame_x_max = tb.LabelFrame(lframe_parameters, text="Max x")
+        # frame_x_max.pack(pady=10)
+        # self.input_x_max = tb.Entry(frame_x_max, width=10)
+        # self.input_x_max.pack(padx=10, pady=5)
 
         frame_ants_nbr = tb.LabelFrame(lframe_parameters, text="Number of ants")
         frame_ants_nbr.pack(pady=10)
@@ -111,11 +128,11 @@ class App():
         self.exit_event = threading.Event()
         self.reset_parameters()
         self.root.mainloop()        
-        
+
     def reset_parameters(self):
         self.update_plot()
-        self.set_text(self.input_x_min, '-1000')
-        self.set_text(self.input_x_max, '1000')
+        # self.set_text(self.input_x_min, '-1000')
+        # self.set_text(self.input_x_max, '1000')
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
@@ -126,17 +143,15 @@ class App():
         try:
             self.exit_event.clear()
             self.update_plot()
-            th = threading.Thread(target=self.run_algorithm, args=(algorithm,), daemon=True)
-            self.toggle_btn()
+            th = threading.Thread(target=self.run_algorithm, daemon=True)
+            self.btn_run.pack_forget()
+            self.btn_stop.pack(**self.btn_parameters)
             th.start()
             self.wait_for_finish()
         except Exception as ex:
             self.exit_event.set()
-            self.show_error(ex)
-
+            print(ex)
         self.exit_event.set()
-        self.btn_run.pack_forget()
-        self.btn_stop.pack(**self.btn_parameters)
 
     def pause(self):
         self.btn_stop.pack_forget()
@@ -144,26 +159,45 @@ class App():
 
     def run_algorithm(self):
         pass
+
+    def wait_for_finish(self):
+        if self.exit_event.is_set():
+            self.btn_stop.grid_forget()
+            self.btn_run.grid(**self.btn_parameters)            
+            self.root.update_idletasks()
+            print('Finished')
+        else:            
+            self.root.after(100, self.wait_for_finish)
+
     def set_text(self, widget, text):
         widget.delete(0,tk.END)
         widget.insert(0, text)
         
-    def update_plot(self, x: list =[], xlim: list = [], y_iter: list = [], y_rec: list = []):
-        self.plot1.clear()
-        self.plot1.plot(x, y_iter, label="Iterative", marker='o')
-        self.plot1.plot(x, y_rec, label="Recursive", marker='o')        
-        self.plot1.set_xlabel('x')
-        self.plot1.set_ylabel('f(x)')
+    def update_plot(self):
+        func_data = self.TEST_FUNCTIONS[self.test_function_var]
+        x = np.linspace(0, 10, 100)
+        y = np.linspace(0, 5, 50)
+        X, Y = np.meshgrid(x, y)
+        Z = np.sin(X) * np.cos(Y)
+        p = self.ax.plot_surface(X, Y, Z, rstride=1, cstride=1, 
+                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+        cb = self.fig.colorbar(p, shrink=0.5)     
+        # self.plot1.clear()
+        # self.plot1.plot(x, y_iter, label="Iterative", marker='o')
+        # self.plot1.set_xlabel('x')
+        # self.plot1.set_ylabel('f(x)')
         
-        for xx, yy in zip(x, y_iter):
-            self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy),)
-        for xx, yy in zip(x, y_rec):
-            self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy))
-        self.plot1.legend()
-        if xlim:
-            self.plot1.set_xlim(xlim)
+        # for xx, yy in zip(x, y_iter):
+        #     self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy),)
+        # for xx, yy in zip(x, y_rec):
+        #     self.plot1.annotate(self.format_small_number(yy), xy=(xx,yy))
+        # self.plot1.legend()
+        # if xlim:
+        #     self.plot1.set_xlim(xlim)
+        self.fig.tight_layout()
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
 
