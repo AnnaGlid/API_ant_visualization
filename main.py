@@ -1,4 +1,5 @@
 import threading
+import math
 import tkinter as tk
 import ttkbootstrap as tb
 import matplotlib.pyplot as plt
@@ -10,20 +11,19 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-def schwefel_fun(self):
-        pass
-
 class App():
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
-            
+            'type': 'min',
+            'extremum': 0,
+            'domain_min': -5.12,
+            'domain_max': 5.12
         },
         'F. Schwefel': {
             'type': 'min',
             'extremum': 420.9687,
             'domain_min': -500,
-            'domain_max': 500,
-            'func': schwefel_fun
+            'domain_max': 500
         }
     }
     
@@ -47,14 +47,7 @@ class App():
         frame_graph = tb.Frame(root_frame)
         frame_graph.grid(row=1, column=0)
         frame_parameters = tb.Frame(root_frame)
-        frame_parameters.grid(row=1, column=1, padx=50, sticky='ns')
-        
-        #region plot
-        self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
-        self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')  
-        self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
-        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)         
-        #endregion
+        frame_parameters.grid(row=1, column=1, padx=50, sticky='ns')    
 
         #region top
         frame_iteration = tb.LabelFrame(top_frame, text='Iteration')
@@ -124,13 +117,20 @@ class App():
         self.btn_stop = tb.Button(lframe_parameters, text="Stop", takefocus=False, width=10, 
                                   command=self.pause, style='danger')        
         #endregion
-                
-        self.exit_event = threading.Event()
-        self.reset_parameters()
+
+        self.reset_parameters(without_plot = True)
+        #region plot
+        self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
+        self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')  
+        self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)      
+        self.update_plot()   
+        #endregion
+                        
+        self.exit_event = threading.Event()        
         self.root.mainloop()        
 
-    def reset_parameters(self):
-        self.update_plot()
+    def reset_parameters(self, without_plot: bool = False):        
         # self.set_text(self.input_x_min, '-1000')
         # self.set_text(self.input_x_max, '1000')
         self.set_text(self.input_ants_nbr, '20')
@@ -138,8 +138,11 @@ class App():
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.auto_run_var.set(1)
         self.speed_val.set(50)
+        if not without_plot:
+            self.update_plot()
 
     def run(self):
+        print(f'run: {self.test_function_var.get()}')
         try:
             self.exit_event.clear()
             self.update_plot()
@@ -154,6 +157,7 @@ class App():
         self.exit_event.set()
 
     def pause(self):
+        print(f'pause: {self.test_function_var.get()}')
         self.btn_stop.pack_forget()
         self.btn_run.pack(**self.btn_parameters)        
 
@@ -174,15 +178,21 @@ class App():
         widget.insert(0, text)
         
     def update_plot(self):
-        func_data = self.TEST_FUNCTIONS[self.test_function_var]
-        x = np.linspace(0, 10, 100)
-        y = np.linspace(0, 5, 50)
+        chosen_func = self.test_function_var.get()
+        func_data = self.TEST_FUNCTIONS[chosen_func]
+        x = np.linspace(func_data['domain_min'], func_data['domain_max'], 100)
+        y = np.linspace(func_data['domain_min'], func_data['domain_max'], 100)
         X, Y = np.meshgrid(x, y)
-        Z = np.sin(X) * np.cos(Y)
+        if chosen_func == 'F. Schwefel':
+            Z = - (X * np.sin(math.sqrt(abs(X))) + Y * np.sin(math.sqrt(abs(Y))))
+        elif chosen_func == 'F. Rastrigin':
+            Z = 10*2 + (X**2 - 10*np.cos(2*np.pi*X)) + (Y**2 - 10*np.cos(2*np.pi*Y))
+
         p = self.ax.plot_surface(X, Y, Z, rstride=1, cstride=1, 
                                  cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
-        cb = self.fig.colorbar(p, shrink=0.5)     
+        # cb = self.fig.colorbar(p, shrink=0.5)  
+           
         # self.plot1.clear()
         # self.plot1.plot(x, y_iter, label="Iterative", marker='o')
         # self.plot1.set_xlabel('x')
