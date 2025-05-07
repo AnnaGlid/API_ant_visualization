@@ -145,14 +145,14 @@ class App():
 
     def reset_parameters(self, without_plot: bool = False):        
         # self.set_text(self.input_x_min, '-1000')
-        # self.set_text(self.input_x_max, '1000')
-        self.dots = self.ax.scatter([],[],[], color='black', s=20)
+        # self.set_text(self.input_x_max, '1000')        
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.auto_run_var.set(1)
         self.speed_val.set(50)
         if not without_plot:
+            self.dots = self.ax.scatter([],[],[], color='black', s=20)
             self.update_plot()
 
     def run(self):
@@ -166,9 +166,10 @@ class App():
             th.start()
             self.wait_for_finish()
         except Exception as ex:
+            print(ex)
             self.exit_event.set()
             print(ex)
-        self.exit_event.set()
+        # self.exit_event.set()
 
     def pause(self):
         print(f'pause: {self.test_function_var.get()}')
@@ -180,8 +181,8 @@ class App():
 
     def wait_for_finish(self):
         if self.exit_event.is_set():
-            self.btn_stop.grid_forget()
-            self.btn_run.grid(**self.btn_parameters)            
+            self.btn_stop.pack_forget()
+            self.btn_run.pack(**self.btn_parameters)            
             self.root.update_idletasks()
             print('Finished')
         else:            
@@ -193,12 +194,14 @@ class App():
         
     def update_plot(self):
         chosen_func = self.test_function_var.get()
+        print('chosen func: ' + chosen_func)
         func_data = self.TEST_FUNCTIONS[chosen_func]
+        self.ax.clear()
         p = self.ax.plot_surface(func_data['X'], func_data['Y'], 
                                  func_data['Z'], rstride=1, cstride=1, 
-                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)                
-        self.fig.tight_layout()
-        self.canvas.draw_idle()
+                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)
+        # self.fig.tight_layout()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
@@ -206,5 +209,5 @@ class App():
     def update_plot_ants(self, ants: list = [[], [], []]):
         self.dots._offsets3d = ants
         self.canvas.draw_idle()
-        
+
 app = App()
