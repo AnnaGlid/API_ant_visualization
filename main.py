@@ -1,11 +1,14 @@
+import time
 import threading
 import numpy as np
 import tkinter as tk
 from matplotlib import cm
 import ttkbootstrap as tb
 from matplotlib.figure import Figure 
+from ttkbootstrap.dialogs.dialogs import Messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import time
+
+from api import Anthill
 
 class App():
 
@@ -23,16 +26,20 @@ class App():
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
             'type': 'min',
-            'extremum': 0,
+            'extremum_val': 0,
+            'extremum_x': 0,
+            'extremum_y': 0,
             'domain_min': -5.12,
-            'domain_max': 5.12,
+            'domain_max': 5.12,            
             'X': r_X,
             'Y': r_Y,
             'Z': r_Z
         },
         'F. Schwefel': {
             'type': 'min',
-            'extremum': 420.9687,
+            'extremum_val': -418.9829 * 2,
+            'extremum_x': 420.9687,
+            'extremum_y': 420.9687,
             'domain_min': -500,
             'domain_max': 500,
             'X': s_X,
@@ -42,7 +49,7 @@ class App():
     }
     
     def __init__(self):
-        self.exit_event = threading.Event()    
+        self.exit_event = threading.Event()            
         # visuals
         self.root = tb.Window(themename='darkly')
         self.root.title ('API ant algoritm visualization')
@@ -99,6 +106,11 @@ class App():
         self.input_ant_memory = tb.Entry(frame_ant_memory, width=10)
         self.input_ant_memory.pack(padx=10, pady=5) 
 
+        frame_ant_moves = tb.LabelFrame(lframe_parameters, text="Ant moves")
+        frame_ant_moves.pack(pady=10)
+        self.input_ant_moves = tb.Entry(frame_ant_moves, width=10)
+        self.input_ant_moves.pack(padx=10, pady=5) 
+
         self.test_function_var = tk.StringVar(lframe_parameters)
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
@@ -149,6 +161,7 @@ class App():
         # self.set_text(self.input_x_max, '1000')        
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
+        self.set_text(self.input_ant_moves, '5')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.auto_run_var.set(1)
         self.speed_val.set(50)
@@ -161,6 +174,22 @@ class App():
 
     def run(self):
         print(f'run: {self.test_function_var.get()}')
+        self.anthill = Anthill(
+            ants_number=self.get_int(self.input_ants_nbr),
+            memory_slots=self.get_int(self.input_ant_memory),
+            t_moves=self.get_int(self.input_ant_moves),
+            space=[
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['X'],
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['Y'],
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['Z']
+            ],
+            extremum_type=self.TEST_FUNCTIONS[self.test_function_var.get()]['type'],
+            extremum_point=(
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_x'],
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_y'],
+                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_val']
+            )
+        )
         try:
             self.exit_event.clear()
             self.iteration_per_second = self.speed_val.get()
@@ -187,14 +216,13 @@ class App():
         iteration = 0
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
-            print(iteration)
             self.label_iteration.config(text=str(iteration))
             self.label_iteration.update()
+
             time.sleep((1 / self.speed_val.get()) * 5)
 
         if time.time() >= timeout:
             print('Timeout!')
-
 
     def wait_for_finish(self):
         if self.exit_event.is_set():
@@ -204,6 +232,14 @@ class App():
             print('Finished')
         else:            
             self.root.after(100, self.wait_for_finish)
+
+    def get_int(self, widget: tb.Entry):
+        value = widget.get()
+        try:
+            return int(value)
+        except Exception as ex:
+            Messagebox.show_error(f'Error while getting value from input "{value}": {ex}')
+    
 
     def set_text(self, widget, text):
         widget.delete(0,tk.END)

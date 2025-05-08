@@ -10,13 +10,14 @@ class Ant():
 class Anthill():
 
     def __init__(self, ants_number: int, memory_slots: int, t_moves: int, 
-                 s: np.ndarray, extremum_type: str, x: float, y: float):
+                 space: list, extremum_type: str, extremum_point: tuple[float]):
         self.ants = [Ant(memory_slots) for i in range(ants_number)]
         self.nest = (None, None, None)
-        self.s = s
+        self.t_moves = t_moves
+        self.space = space # list of ndarrays: X, Y, Z
         self.extremum_type = extremum_type
-        self.x = x
-        self.y = y # domain
+        self.extremum_point = extremum_point
+
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
