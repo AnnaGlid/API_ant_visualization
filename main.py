@@ -115,12 +115,12 @@ class App():
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
         for fn in list(self.TEST_FUNCTIONS):
-            tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn)\
+            tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn, command=self.update_plot)\
                             .pack(padx=10, pady=5)
 
-        self.auto_run_var = tk.IntVar(lframe_parameters, 1)
-        auto_run = tb.Checkbutton(lframe_parameters, text="Auto run", variable=self.auto_run_var)
-        auto_run.pack(pady=10)
+        # self.auto_run_var = tk.IntVar(lframe_parameters, 1)
+        # auto_run = tb.Checkbutton(lframe_parameters, text="Auto run", variable=self.auto_run_var)
+        # auto_run.pack(pady=10)
 
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
@@ -151,9 +151,8 @@ class App():
         self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')  
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
         self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)      
-        self.update_plot()   
         #endregion
-                                    
+        self.update_plot()        
         self.root.mainloop()        
 
     def reset_parameters(self, without_plot: bool = False):        
@@ -163,7 +162,7 @@ class App():
         self.set_text(self.input_ant_memory, '2')
         self.set_text(self.input_ant_moves, '5')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
-        self.auto_run_var.set(1)
+        # self.auto_run_var.set(1)
         self.speed_val.set(50)
         self.label_ants_number.config(text="0")
         self.label_iteration.config(text="0")
@@ -173,21 +172,22 @@ class App():
             self.update_plot()
 
     def run(self):
-        print(f'run: {self.test_function_var.get()}')
+        func = self.test_function_var.get()
+        print(f'run: {func}')
         self.anthill = Anthill(
             ants_number=self.get_int(self.input_ants_nbr),
             memory_slots=self.get_int(self.input_ant_memory),
             t_moves=self.get_int(self.input_ant_moves),
             space=[
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['X'],
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['Y'],
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['Z']
+                self.TEST_FUNCTIONS[func]['X'],
+                self.TEST_FUNCTIONS[func]['Y'],
+                self.TEST_FUNCTIONS[func]['Z']
             ],
-            extremum_type=self.TEST_FUNCTIONS[self.test_function_var.get()]['type'],
+            extremum_type=self.TEST_FUNCTIONS[func]['type'],
             extremum_point=(
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_x'],
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_y'],
-                self.TEST_FUNCTIONS[self.test_function_var.get()]['extremum_val']
+                self.TEST_FUNCTIONS[func]['extremum_x'],
+                self.TEST_FUNCTIONS[func]['extremum_y'],
+                self.TEST_FUNCTIONS[func]['extremum_val']
             )
         )
         try:
