@@ -23,6 +23,7 @@ class App():
     s_y = np.linspace(-500, 500, ELEMENTS)
     s_X, s_Y = np.meshgrid(s_x, s_y)
     s_Z = - (s_X * np.sin(np.sqrt(np.abs(s_X))) + s_Y * np.sin(np.sqrt(np.abs(s_Y))))
+    # min_val = 
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
             'type': 'min',
@@ -33,7 +34,11 @@ class App():
             'domain_max': 5.12,            
             'X': r_X,
             'Y': r_Y,
-            'Z': r_Z
+            'Z': r_Z,
+            'x': r_x,
+            'y': r_y,
+            'min_val': min(r_Z.flatten()),
+            'max_val': max(r_Z.flatten())
         },
         'F. Schwefel': {
             'type': 'min',
@@ -44,7 +49,11 @@ class App():
             'domain_max': 500,
             'X': s_X,
             'Y': s_Y,
-            'Z': s_Z
+            'Z': s_Z,
+            'x': s_x,
+            'y': s_y,
+            'min_val': min(s_Z.flatten()),
+            'max_val': max(s_Z.flatten())            
         }
     }
     
@@ -148,8 +157,7 @@ class App():
         self.nest_mark = None
         self.reset_parameters(without_plot = True)
         #region plot
-        self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
-        self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')  
+        self.fig = Figure(figsize = (11, 5.8), dpi = 100)                           
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
         self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)      
         #endregion
@@ -169,20 +177,20 @@ class App():
         self.label_iteration.config(text="0")
         self.exit_event.set()
         if not without_plot:
-            self.dots = self.ax.scatter([],[],[], color='black', s=20)
-            self.nest_mark = self.ax.scatter([],[],[], color='red', marker='X', s=30)
+            self.dots = self.ax_3d.scatter([],[],[], color='black', s=20, depthshade=0)
+            self.nest_mark = self.ax_3d.scatter([],[],[], color='red', marker='X', s=30, depthshade=0)
             self.update_plot()
 
     def run(self):
-        func = self.test_function_var.get()
+        func = self.test_function_var.get()        
         print(f'run: {func}')
         self.anthill = Anthill(
             ants_number=self.get_int(self.input_ants_nbr),
             memory_slots=self.get_int(self.input_ant_memory),
             t_moves=self.get_int(self.input_ant_moves),
             space=[
-                self.TEST_FUNCTIONS[func]['X'],
-                self.TEST_FUNCTIONS[func]['Y'],
+                self.TEST_FUNCTIONS[func]['x'],
+                self.TEST_FUNCTIONS[func]['y'],
                 self.TEST_FUNCTIONS[func]['Z']
             ],
             extremum_type=self.TEST_FUNCTIONS[func]['type'],
@@ -211,11 +219,23 @@ class App():
         self.btn_run.pack(**self.btn_parameters)
         self.exit_event.set()
 
-    def run_algorithm(self):
+    def run_algorithm(self):        
         print('Run algorithm')
+        func_info = self.TEST_FUNCTIONS[self.test_function_var.get()]
         now = time.time()
         timeout = now + 60*5        
-        iteration = 0
+        iteration = 0 
+        try: self.ax_3d.remove()
+        except: pass
+        self.ax = self.fig.add_subplot(1, 1, 1)  
+        self.ax.pcolor(func_info['X'], func_info['Y'], func_info['Z'])     
+        self.fig.tight_layout()
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill='both', expand=True)
+        self.toolbar.update() 
+        self.canvas.get_tk_widget().pack()           
+        self.anthill.initialize_system()
+        self.show_nest(*self.anthill.nest)
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
             self.label_iteration.config(text=str(iteration))
@@ -242,7 +262,6 @@ class App():
         except Exception as ex:
             Messagebox.show_error(f'Error while getting value from input "{value}": {ex}')
     
-
     def set_text(self, widget, text):
         widget.delete(0,tk.END)
         widget.insert(0, text)
@@ -251,11 +270,16 @@ class App():
         chosen_func = self.test_function_var.get()
         print('chosen func: ' + chosen_func)
         func_data = self.TEST_FUNCTIONS[chosen_func]
-        self.ax.clear()
-        p = self.ax.plot_surface(func_data['X'], func_data['Y'], 
+        try: self.ax_3d.clear()
+        except: pass
+        try: self.ax.remove()
+        except: pass
+        self.ax_3d = self.fig.add_subplot(1, 1, 1, projection='3d')
+        p = self.ax_3d.plot_surface(func_data['X'], func_data['Y'], 
                                  func_data['Z'], rstride=1, cstride=1, 
-                                 cmap=cm.coolwarm, linewidth=0, antialiased=False)
-        # self.fig.tight_layout()
+                                 cmap=cm.coolwarm, linewidth=0, antialiased=False) 
+        self.fig.tight_layout()
+        self.ax_3d.set_position([0, 0, 1, 1])
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
@@ -264,5 +288,9 @@ class App():
     def update_plot_ants(self, ants: list = [[], [], []]):
         self.dots._offsets3d = ants
         self.canvas.draw_idle()
+
+    def show_nest(self, x, y, z):
+        func_info = self.TEST_FUNCTIONS[self.test_function_var.get()]
+
 
 app = App()
