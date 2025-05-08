@@ -145,6 +145,7 @@ class App():
                                   command=self.pause, style='danger')        
         #endregion
         self.dots = None
+        self.nest_mark = None
         self.reset_parameters(without_plot = True)
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)         
@@ -169,6 +170,7 @@ class App():
         self.exit_event.set()
         if not without_plot:
             self.dots = self.ax.scatter([],[],[], color='black', s=20)
+            self.nest_mark = self.ax.scatter([],[],[], color='red', marker='X', s=30)
             self.update_plot()
 
     def run(self):

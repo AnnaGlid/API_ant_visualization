@@ -1,11 +1,13 @@
 import numpy as np
 import random
 
+
 class Ant():
 
     def __init__(self, memory_slots: int):
         self.memory = [None for i in range(memory_slots)]
         self.pos = (None, None, None)
+
 
 class Anthill():
 
@@ -14,10 +16,12 @@ class Anthill():
         self.ants = [Ant(memory_slots) for i in range(ants_number)]
         self.nest = (None, None, None)
         self.t_moves = t_moves
-        self.space = space # list of ndarrays: X, Y, Z
+        self.space = {'X': space[0], 'Y': space[1], 'Z': space[2]}
         self.extremum_type = extremum_type
         self.extremum_point = extremum_point
 
+    def initialize_system(self):
+        self.nest = self.q_rand()
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
@@ -35,9 +39,12 @@ class Anthill():
                 ant_a.memory.append(best_place)                
     
     def q_rand(self):
-        x = random.choice(self.x)
-        y = random.choice(self.y)
-        return (x, y, self.s[x][y])
+        x_idx = random.choice(range(len(self.space['X'])))
+        y_idx = random.choice(range(len(self.space['Y'])))
+        return (self.space['X'][x_idx], self.space['Y'][y_idx], self.space['Z'][y_idx][x_idx])
     
     def q_explo(self, amplitude: float):
+        pass
+
+    def get_val(self, x: float, y: float):
         pass
