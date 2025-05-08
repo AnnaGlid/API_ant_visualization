@@ -39,4 +39,4 @@ class Anthill():
         return (x, y, self.s[x][y])
     
     def q_explo(self, amplitude: float):
-        
+        pass

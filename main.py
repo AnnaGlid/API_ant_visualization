@@ -5,6 +5,7 @@ from matplotlib import cm
 import ttkbootstrap as tb
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import time
 
 class App():
 
@@ -41,6 +42,7 @@ class App():
     }
     
     def __init__(self):
+        self.exit_event = threading.Event()    
         # visuals
         self.root = tb.Window(themename='darkly')
         self.root.title ('API ant algoritm visualization')
@@ -111,9 +113,9 @@ class App():
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
         self.speed_val = tk.IntVar(lframe_parameters, 50)
-        scale_speed = tb.Scale(frame_speed, from_=1, to=100, orient=tb.HORIZONTAL, 
+        self.scale_speed = tb.Scale(frame_speed, from_=1, to=100, orient=tb.HORIZONTAL, 
                                length=200, variable=self.speed_val)
-        scale_speed.pack(padx=10, pady=5)
+        self.scale_speed.pack(padx=10, pady=5)
 
         reset_btn = tb.Button(lframe_parameters, text="Reset", takefocus=False, 
                               command=self.reset_parameters, width=10)
@@ -139,8 +141,7 @@ class App():
         self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)      
         self.update_plot()   
         #endregion
-                        
-        self.exit_event = threading.Event()        
+                                    
         self.root.mainloop()        
 
     def reset_parameters(self, without_plot: bool = False):        
@@ -151,6 +152,9 @@ class App():
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.auto_run_var.set(1)
         self.speed_val.set(50)
+        self.label_ants_number.config(text="0")
+        self.label_iteration.config(text="0")
+        self.exit_event.set()
         if not without_plot:
             self.dots = self.ax.scatter([],[],[], color='black', s=20)
             self.update_plot()
@@ -159,6 +163,7 @@ class App():
         print(f'run: {self.test_function_var.get()}')
         try:
             self.exit_event.clear()
+            self.iteration_per_second = self.speed_val.get()
             self.update_plot()
             th = threading.Thread(target=self.run_algorithm, daemon=True)
             self.btn_run.pack_forget()
@@ -167,17 +172,29 @@ class App():
             self.wait_for_finish()
         except Exception as ex:
             print(ex)
-            self.exit_event.set()
-            print(ex)
-        # self.exit_event.set()
+            self.exit_event.set()        
 
     def pause(self):
         print(f'pause: {self.test_function_var.get()}')
         self.btn_stop.pack_forget()
-        self.btn_run.pack(**self.btn_parameters)        
+        self.btn_run.pack(**self.btn_parameters)
+        self.exit_event.set()
 
     def run_algorithm(self):
-        pass
+        print('Run algorithm')
+        now = time.time()
+        timeout = now + 60*5        
+        iteration = 0
+        while not self.exit_event.is_set() and time.time() < timeout:
+            iteration += 1
+            print(iteration)
+            self.label_iteration.config(text=str(iteration))
+            self.label_iteration.update()
+            time.sleep((1 / self.speed_val.get()) * 5)
+
+        if time.time() >= timeout:
+            print('Timeout!')
+
 
     def wait_for_finish(self):
         if self.exit_event.is_set():
