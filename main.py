@@ -133,6 +133,11 @@ class App():
         self.input_a_local = tb.Entry(frame_a_local, width=10)
         self.input_a_local.pack(padx=10, pady=5) 
 
+        frame_failed = tb.LabelFrame(lframe_parameters, text="Failed explorations")
+        frame_failed.pack(pady=10)
+        self.input_failed = tb.Entry(frame_failed, width=10)
+        self.input_failed.pack(padx=10, pady=5)         
+
         self.test_function_var = tk.StringVar(lframe_parameters)
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
@@ -184,6 +189,7 @@ class App():
         self.set_text(self.input_ant_moves, '5')
         self.set_text(self.input_a_site, '0.010')
         self.set_text(self.input_a_local, '0.001')
+        self.set_text(self.input_failed, '5')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         # self.auto_run_var.set(1)
         self.speed_val.set(10)
@@ -214,7 +220,8 @@ class App():
             ),
             func=func_info['func'],
             a_site = self.get_float(self.input_a_site),
-            a_local = self.get_float(self.input_a_local)
+            a_local = self.get_float(self.input_a_local),
+            failed_explo = self.get_int(self.input_failed)
         )
         try:
             try: self.ax_3d.remove()
@@ -265,8 +272,12 @@ class App():
             if ants_in_extr != curr_ants_in_extr:
                 ants_in_extr = curr_ants_in_extr
                 self.label_ants_number.config(text = str(ants_in_extr))
-            self.anthill.move()
-            time.sleep((1 / self.speed_val.get()) * 5)
+
+            for move in range(self.anthill.t_moves):
+                self.anthill.move()
+                time.sleep((1 / self.speed_val.get()) * 5)
+            self.anthill.move_nest()
+            time.sleep((1 / self.speed_val.get()) * 10)           
 
         if time.time() >= timeout:
             print('Timeout!')
@@ -283,9 +294,11 @@ class App():
     def get_int(self, widget: tb.Entry):
         value = widget.get()
         try:
-            return int(value)
+            val = int(value)
         except Exception as ex:
             Messagebox.show_error(f'Error while getting int value from input "{value}": {ex}')
+        if val < 1 or val > 2000:
+            Messagebox.show_error(f'Value {val} is out of range [1, 2000]')
     
     def get_float(self, widget: tb.Entry):
         value = widget.get()

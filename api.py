@@ -13,7 +13,8 @@ class Spot():
 
 class Ant():
 
-    def __init__(self, idx, memory_slots: int, nest: list[float], space: list, func):
+    def __init__(self, idx, memory_slots: int, nest: list[float], space: list, 
+                 func, my_a_site: float, my_a_local: float, side_len: float):
         self.memory = [None for i in range(memory_slots)]
         self.memory_slots = memory_slots
         self.space = space
@@ -23,12 +24,19 @@ class Ant():
         self.func = func
         self.idx = idx
         self.current_spot = None
+        self.my_a_site = my_a_site
+        self.my_a_local = my_a_local
+        self.side_len = side_len
+
+    def set_current_spot(self, spot: Spot):
+        self.current_spot = spot
+        self.pos = [spot.x, spot.y]
 
     def find_new_spot(self):
-        x, y = self.q_explo(self.a_site(self.idx))
+        x, y = self.q_explo(self.my_a_site)
         spot = Spot(x, y, self.func(x, y))
         self.add_to_memory(spot)
-        self.current_spot = spot
+        self.set_current_spot(spot)
         
     def get_random_point_radius(self, radius: float, x: float, y: float) -> list:
         if radius == 0:
@@ -42,13 +50,6 @@ class Ant():
     def q_explo(self, amplitude: float) -> list[float, float]:
         x, y, z = self.nest
         return self.get_random_point_radius(amplitude * self.side_len, x, y)
-
-    def a_site(self, ant_idx):
-        val = (self.a_site_x**ant_idx) * self.a_site_par
-        print(f'A site value: {val}')
-        if val < 0 or val > 1:
-            raise Exception(f'Invalid a site value: {val}')
-        return val
     
     def add_to_memory(self, spot: Spot):
         for idx, slot in enumerate(self.memory):
@@ -58,25 +59,35 @@ class Ant():
     def clean_memory(self):
         self.memory = [None for i in self.memory_slots]
 
+    def choose_random_spot_from_memory(self):
+        spot = random.choice(self.memory)
+        self.set_current_spot(spot)
+
+    def explore_current_spot(self):
+        pass        
 
 class Anthill():
 
     def __init__(self, ants_number: int, memory_slots: int, t_moves: int, 
                  space: list, extremum_type: str, extremum_point: tuple[float], 
-                 func, a_site: float, a_local: float):
+                 func, a_site: float, a_local: float, failed_explo: int):
         self.space = {'X': space[0], 'Y': space[1], 'Z': space[2]}
         self.func = func
-        self.nest = self.q_rand()        
-        self.ants = [Ant(i, memory_slots, self.nest, self.space, func) for i in range(1, ants_number+1)]
+        self.nest = self.q_rand()                
         self.t_moves = t_moves        
         self.extremum_type = extremum_type
         self.extremum_point = extremum_point        
-        self.a_site_par = a_site
-        self.a_site_x = (1/a_site)**(1/ants_number)
-        self.a_local_par = a_local
+        a_site_x = (1/a_site)**(1/ants_number)
+        self.failed_explo = failed_explo
         x_len = self.space['X'][-1] - self.space['X'][0]
         y_len = self.space['Y'][-1] - self.space['Y'][0]
-        self.side_len = x_len if x_len > y_len else y_len
+        self.ants = [
+            Ant(i, memory_slots, self.nest, self.space, func,
+                my_a_site = (a_site_x**i) * a_site,
+                my_a_local = a_local,
+                max_side_len = x_len if x_len > y_len else y_len)
+            for i in range(1, ants_number+1)
+        ]
         
     def move(self):
         for ant in self.ants:
@@ -122,6 +133,18 @@ class Anthill():
                 ant_a.memory.remove(place_to_replace)
                 ant_a.memory.append(best_place)                
     
+    def sort_out_ants_memory(self):
+        for ant in self.ants:
+            new_memory = []
+            deleted = 0
+            for spot in ant.memory:
+                if spot.failed > self.failed_explo:
+                    deleted += 1
+                else:
+                    new_memory.append(spot)
+            for i in range(deleted):
+                new_memory.append(None)
+
     def q_rand(self):
         x = random.choice(self.space['X'])
         y= random.choice(self.space['Y'])
