@@ -39,6 +39,8 @@ class Anthill():
         self.a_site = a_site
         self.a_local = a_local
         
+    def move(self):
+        pass
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
@@ -63,5 +65,14 @@ class Anthill():
     def q_explo(self, amplitude: float):
         pass
 
-    def get_ants(self) -> list:
+    def get_ants(self) -> list:        
         return [ant.pos for ant in self.ants]
+    
+    def get_ants_in_extr(self):
+        count = 0
+        ex_x, ex_y, ex_z = self.extremum_point
+        for ant in self.ants:
+            x, y, z = ant.pos            
+            if x == ex_x and y == ex_y:
+                count += 1
+        return count

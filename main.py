@@ -253,12 +253,19 @@ class App():
         timeout = now + 60*5        
         iteration = 0
         time.sleep(2)
+        ants_in_extr = self.anthill.get_ants_in_extr()
+        self.label_ants_number.config(text = str(ants_in_extr))
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
             self.show_ants(self.anthill.get_ants())
             self.canvas.draw_idle()
             self.label_iteration.config(text=str(iteration))
-            self.label_iteration.update()
+            self.label_iteration.update()            
+            curr_ants_in_extr = self.anthill.get_ants_in_extr()
+            if ants_in_extr != curr_ants_in_extr:
+                ants_in_extr = curr_ants_in_extr
+                self.label_ants_number.config(text = str(ants_in_extr))
+            self.anthill.move()
             time.sleep((1 / self.speed_val.get()) * 5)
 
         if time.time() >= timeout:
