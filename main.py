@@ -9,7 +9,12 @@ from ttkbootstrap.dialogs.dialogs import Messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from api import Anthill
-from common import rastrigin, schwefel
+
+def rastrigin(x: float, y: float) -> float:
+    return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
+
+def schwefel(x: float, y: float) -> float:
+    return x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y)))
 
 class App():
 
@@ -131,7 +136,7 @@ class App():
 
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
-        self.speed_val = tk.IntVar(lframe_parameters, 50)
+        self.speed_val = tk.IntVar(lframe_parameters, 10)
         self.scale_speed = tb.Scale(frame_speed, from_=1, to=100, orient=tb.HORIZONTAL, 
                                length=200, variable=self.speed_val)
         self.scale_speed.pack(padx=10, pady=5)
@@ -169,7 +174,7 @@ class App():
         self.set_text(self.input_ant_moves, '5')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         # self.auto_run_var.set(1)
-        self.speed_val.set(50)
+        self.speed_val.set(10)
         self.label_ants_number.config(text="0")
         self.label_iteration.config(text="0")
         self.exit_event.set()
@@ -194,7 +199,8 @@ class App():
                 func_info['extremum_x'],
                 func_info['extremum_y'],
                 func_info['extremum_val']
-            )
+            ),
+            func=func_info['func']
         )
         try:
             try: self.ax_3d.remove()
@@ -207,8 +213,7 @@ class App():
             self.canvas.draw()
             self.canvas.get_tk_widget().pack(fill='both', expand=True)
             self.toolbar.update() 
-            self.canvas.get_tk_widget().pack()           
-            self.anthill.initialize_system()                  
+            self.canvas.get_tk_widget().pack()                
             self.exit_event.clear()
             self.iteration_per_second = self.speed_val.get()
             th = threading.Thread(target=self.run_algorithm, daemon=True)
@@ -234,10 +239,10 @@ class App():
         time.sleep(2)
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
-            self.show_ants()
+            self.show_ants(self.anthill.get_ants())
             self.canvas.draw_idle()
             self.label_iteration.config(text=str(iteration))
-            self.label_iteration.update()            
+            self.label_iteration.update()
             time.sleep((1 / self.speed_val.get()) * 5)
 
         if time.time() >= timeout:
@@ -264,6 +269,7 @@ class App():
         widget.insert(0, text)
         
     def update_plot(self):
+        self.exit_event.set()
         chosen_func = self.test_function_var.get()
         print('chosen func: ' + chosen_func)
         func_data = self.TEST_FUNCTIONS[chosen_func]
@@ -271,6 +277,9 @@ class App():
         except: pass
         try: self.ax.remove()
         except: pass
+        try: self.fig.delaxes(self.ax)   
+        except: pass
+        self.canvas.draw()
         self.ax_3d = self.fig.add_subplot(1, 1, 1, projection='3d')
         p = self.ax_3d.plot_surface(func_data['X'], func_data['Y'], 
                                  func_data['Z'], rstride=1, cstride=1, 
@@ -283,15 +292,17 @@ class App():
         self.canvas.get_tk_widget().pack()
 
     def show_nest(self, x, y, z):
-        self.nest_mark, _ = self.ax.plot(x, y, color='r', marker='X', markersize=10, zorder=10)
+        self.nest_mark, = self.ax.plot(x, y, color='r', marker='X', markersize=13, zorder=10)
 
     def show_ants(self, ants: list[tuple[float]]):
-        self.ant_marks, _ = self.ax.plot([ant[0] for ant in ants], [ant[1] for ant in ants], 'o', color='black')
+        self.ant_marks, = self.ax.plot([ant[0] for ant in ants], [ant[1] for ant in ants], 
+                                       'o', markersize=4, markerfacecolor='black',
+                                       markeredgecolor='white', markeredgewidth=1)
 
     def move_nest(self, x, y, z):
         self.nest_mark.set_data(x, y)
 
     def move_ants(self, ants: list[tuple[float]]):
         self.ant_marks.set_data([ant[0] for ant in ants], [ant[1] for ant in ants])
-        
+
 app = App()

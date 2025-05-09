@@ -12,21 +12,30 @@ class Point():
 
 class Ant():
 
-    def __init__(self, memory_slots: int):
+    def __init__(self, memory_slots: int, nest: list[float], space: list, func):
         self.memory = [None for i in range(memory_slots)]
-        self.pos = (None, None, None)
+        self.space = space
+        self.nest = nest
+        self.func = func
+        self.pos = self.q_explo()
+        self.func = func
 
+    def q_explo(self, amplitude: float = 0.5) -> list[float]:
+        x, y = random.choice(self.space['X']), random.choice(self.space['Y'])
+        return [x, y, self.func(x, y)]
 
 class Anthill():
 
     def __init__(self, ants_number: int, memory_slots: int, t_moves: int, 
-                 space: list, extremum_type: str, extremum_point: tuple[float]):
-        self.ants = [Ant(memory_slots) for i in range(ants_number)]
-        self.t_moves = t_moves
+                 space: list, extremum_type: str, extremum_point: tuple[float], func):
         self.space = {'X': space[0], 'Y': space[1], 'Z': space[2]}
+        self.func = func
+        self.nest = self.q_rand()        
+        self.ants = [Ant(memory_slots, self.nest, self.space, func) for i in range(ants_number)]
+        self.t_moves = t_moves        
         self.extremum_type = extremum_type
-        self.extremum_point = extremum_point
-        self.nest = self.q_rand()
+        self.extremum_point = extremum_point        
+        
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
@@ -44,12 +53,12 @@ class Anthill():
                 ant_a.memory.append(best_place)                
     
     def q_rand(self):
-        x_idx = random.choice(range(len(self.space['X'])))
-        y_idx = random.choice(range(len(self.space['Y'])))
-        return (self.space['X'][x_idx], self.space['Y'][y_idx], self.space['Z'][y_idx][x_idx])
+        x = random.choice(self.space['X'])
+        y= random.choice(self.space['Y'])
+        return [x, y, self.func(x,y)]
     
     def q_explo(self, amplitude: float):
         pass
 
-    def get_val(self, x: float, y: float):
-        pass
+    def get_ants(self) -> list:
+        return [ant.pos for ant in self.ants]
