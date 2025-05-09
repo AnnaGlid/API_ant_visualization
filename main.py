@@ -9,6 +9,7 @@ from ttkbootstrap.dialogs.dialogs import Messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from api import Anthill
+from common import rastrigin, schwefel
 
 class App():
 
@@ -23,7 +24,6 @@ class App():
     s_y = np.linspace(-500, 500, ELEMENTS)
     s_X, s_Y = np.meshgrid(s_x, s_y)
     s_Z = - (s_X * np.sin(np.sqrt(np.abs(s_X))) + s_Y * np.sin(np.sqrt(np.abs(s_Y))))
-    # min_val = 
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
             'type': 'min',
@@ -37,8 +37,7 @@ class App():
             'Z': r_Z,
             'x': r_x,
             'y': r_y,
-            'min_val': min(r_Z.flatten()),
-            'max_val': max(r_Z.flatten())
+            'func': rastrigin
         },
         'F. Schwefel': {
             'type': 'min',
@@ -52,10 +51,9 @@ class App():
             'Z': s_Z,
             'x': s_x,
             'y': s_y,
-            'min_val': min(s_Z.flatten()),
-            'max_val': max(s_Z.flatten())            
+            'func': schwefel
         }
-    }
+    } 
     
     def __init__(self):
         self.exit_event = threading.Event()            
@@ -187,15 +185,15 @@ class App():
             memory_slots=self.get_int(self.input_ant_memory),
             t_moves=self.get_int(self.input_ant_moves),
             space=[
-                self.TEST_FUNCTIONS[func]['x'],
-                self.TEST_FUNCTIONS[func]['y'],
-                self.TEST_FUNCTIONS[func]['Z']
+                func_info['x'],
+                func_info['y'],
+                func_info['Z']
             ],
-            extremum_type=self.TEST_FUNCTIONS[func]['type'],
+            extremum_type=func_info['type'],
             extremum_point=(
-                self.TEST_FUNCTIONS[func]['extremum_x'],
-                self.TEST_FUNCTIONS[func]['extremum_y'],
-                self.TEST_FUNCTIONS[func]['extremum_val']
+                func_info['extremum_x'],
+                func_info['extremum_y'],
+                func_info['extremum_val']
             )
         )
         try:
@@ -232,6 +230,7 @@ class App():
         now = time.time()
         timeout = now + 60*5        
         iteration = 0   
+        time.sleep(2)
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
             self.label_iteration.config(text=str(iteration))
@@ -285,6 +284,6 @@ class App():
         self.canvas.draw_idle()
 
     def show_nest(self, x, y, z):
-        self.ax.plot(x, y, color='r', markersize=10, zorder=10)
+        self.ax.plot(x, y, color='r', marker='X', markersize=10, zorder=10)
 
 app = App()
