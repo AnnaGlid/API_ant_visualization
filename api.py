@@ -14,19 +14,20 @@ class Spot():
 class Ant():
 
     def __init__(self, idx, memory_slots: int, nest: list[float], space: list, 
-                 func, my_a_site: float, my_a_local: float, side_len: float):
+                 func, my_a_site: float, my_a_local: float, max_side_len: float,
+                 extremum_type: str):
         self.memory = [None for i in range(memory_slots)]
         self.memory_slots = memory_slots
         self.space = space
-        self.nest = nest
-        self.func = func
-        self.pos = self.q_explo()
+        self.nest = nest        
         self.func = func
         self.idx = idx
         self.current_spot = None
         self.my_a_site = my_a_site
         self.my_a_local = my_a_local
-        self.side_len = side_len
+        self.side_len = max_side_len
+        self.pos = self.q_explo(my_a_site)
+        self.extremum_type = extremum_type
 
     def set_current_spot(self, spot: Spot):
         self.current_spot = spot
@@ -45,6 +46,14 @@ class Ant():
         r = radius * np.sqrt(random.random())
         x = r * np.cos(alpha) + x
         y = r * np.sin(alpha) + y
+        if x < self.space['X'][0]:
+            x = self.space['X'][0]
+        if x > self.space['X'][-1]:
+            x = self.space['X'][-1]
+        if y < self.space['Y'][0]:
+            y = self.space['Y'][0]
+        if y > self.space['Y'][-1]:
+            y = self.space['Y'][-1]
         return [x, y]
     
     def q_explo(self, amplitude: float) -> list[float, float]:
@@ -55,16 +64,27 @@ class Ant():
         for idx, slot in enumerate(self.memory):
             if not slot:
                 self.memory[idx] = spot
+                return
     
     def clean_memory(self):
-        self.memory = [None for i in self.memory_slots]
+        self.memory = [None for i in range(self.memory_slots)]
 
     def choose_random_spot_from_memory(self):
         spot = random.choice(self.memory)
         self.set_current_spot(spot)
 
     def explore_current_spot(self):
-        pass        
+        spot_nearby = self.get_random_point_radius(self.my_a_local * self.side_len,
+                                                     self.current_spot.x, self.current_spot.y)
+        spot_nearby_val = self.func(*spot_nearby)
+        if (self.extremum_type == 'min' and spot_nearby_val < self.current_spot.z) or\
+            (self.extremum_type == 'max' and spot_nearby_val > self.current_spot.z):
+            self.current_spot.success = True
+        else:
+            self.current_spot.success = False
+            self.current_spot.failed += 1
+            
+        
 
 class Anthill():
 
@@ -85,7 +105,8 @@ class Anthill():
             Ant(i, memory_slots, self.nest, self.space, func,
                 my_a_site = (a_site_x**i) * a_site,
                 my_a_local = a_local,
-                max_side_len = x_len if x_len > y_len else y_len)
+                max_side_len = x_len if x_len > y_len else y_len,
+                extremum_type=extremum_type)
             for i in range(1, ants_number+1)
         ]
         
@@ -120,16 +141,16 @@ class Anthill():
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
-            min_a = min(place[2] for place in ant_a.memory)
-            min_b = min(place[2] for place in ant_b.memory)
+            min_a = min(place.z for place in ant_a.memory)
+            min_b = min(place.z for place in ant_b.memory)
             if min_a <= min_b:
-                best_place = next(filter(lambda x: x[2] == min_a, ant_a.memory))
-                place_to_replace = next(filter(lambda x: x[2] == min_b, ant_b.memory))
+                best_place = next(filter(lambda x: x.z == min_a, ant_a.memory))
+                place_to_replace = next(filter(lambda x: x.z == min_b, ant_b.memory))
                 ant_b.memory.remove(place_to_replace)
                 ant_b.memory.append(best_place)
             else:
-                best_place = next(filter(lambda x: x[2] == min_b, ant_b.memory))
-                place_to_replace = next(filter(lambda x: x[2] == min_a, ant_a.memory))
+                best_place = next(filter(lambda x: x.z == min_b, ant_b.memory))
+                place_to_replace = next(filter(lambda x: x.z == min_a, ant_a.memory))
                 ant_a.memory.remove(place_to_replace)
                 ant_a.memory.append(best_place)                
     
@@ -157,7 +178,8 @@ class Anthill():
         count = 0
         ex_x, ex_y, ex_z = self.extremum_point
         for ant in self.ants:
-            x, y, z = ant.pos            
+            x = ant.pos[0]
+            y = ant.pos[1]
             if x == ex_x and y == ex_y:
                 count += 1
         return count

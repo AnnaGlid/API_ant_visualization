@@ -81,7 +81,7 @@ class App():
         frame_graph = tb.Frame(root_frame)
         frame_graph.grid(row=1, column=0)
         frame_parameters = tb.Frame(root_frame)
-        frame_parameters.grid(row=1, column=1, padx=50, sticky='ns')    
+        frame_parameters.grid(row=0, column=1, padx=50, sticky='ns', rowspan=2)    
 
         #region top
         frame_iteration = tb.LabelFrame(top_frame, text='Iteration')
@@ -259,15 +259,12 @@ class App():
         now = time.time()
         timeout = now + 60*5        
         iteration = 0
-        time.sleep(2)
+        time.sleep(1)
         ants_in_extr = self.anthill.get_ants_in_extr()
         self.label_ants_number.config(text = str(ants_in_extr))
-        while not self.exit_event.is_set() and time.time() < timeout:
-            iteration += 1
-            self.show_ants(self.anthill.get_ants())
-            self.canvas.draw_idle()
-            self.label_iteration.config(text=str(iteration))
-            self.label_iteration.update()            
+        self.show_ants(self.anthill.get_ants())
+        self.canvas.draw_idle()       
+        while not self.exit_event.is_set() and time.time() < timeout:                          
             curr_ants_in_extr = self.anthill.get_ants_in_extr()
             if ants_in_extr != curr_ants_in_extr:
                 ants_in_extr = curr_ants_in_extr
@@ -275,8 +272,14 @@ class App():
 
             for move in range(self.anthill.t_moves):
                 self.anthill.move()
-                time.sleep((1 / self.speed_val.get()) * 5)
+                self.move_ants(self.anthill.get_ants())
+                self.canvas.draw_idle()
+                time.sleep(1 / (self.speed_val.get() * 5))
             self.anthill.move_nest()
+            self.canvas.draw_idle()
+            iteration += 1            
+            self.label_iteration.config(text=str(iteration))     
+            self.label_iteration.update()                      
             time.sleep((1 / self.speed_val.get()) * 10)           
 
         if time.time() >= timeout:
@@ -291,7 +294,7 @@ class App():
         else:            
             self.root.after(100, self.wait_for_finish)
 
-    def get_int(self, widget: tb.Entry):
+    def get_int(self, widget: tb.Entry) -> int:
         value = widget.get()
         try:
             val = int(value)
@@ -299,8 +302,10 @@ class App():
             Messagebox.show_error(f'Error while getting int value from input "{value}": {ex}')
         if val < 1 or val > 2000:
             Messagebox.show_error(f'Value {val} is out of range [1, 2000]')
+        else:
+            return val
     
-    def get_float(self, widget: tb.Entry):
+    def get_float(self, widget: tb.Entry) -> float:
         value = widget.get()
         try:
             fl = float(value)
@@ -308,6 +313,8 @@ class App():
             Messagebox.show_error(f'Error while getting float value from input "{value}": {ex}')
         if fl < 0 or fl > 1:
             Messagebox.show_error(f'Value {value} is out of range [0, 1]!')
+        else:
+            return fl
 
     def set_text(self, widget, text):
         widget.delete(0,tk.END)
