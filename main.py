@@ -154,7 +154,6 @@ class App():
                                   command=self.pause, style='danger')        
         #endregion
         self.dots = None
-        self.nest_mark = None
         self.reset_parameters(without_plot = True)
         #region plot
         self.fig = Figure(figsize = (11, 5.8), dpi = 100)                           
@@ -177,12 +176,11 @@ class App():
         self.label_iteration.config(text="0")
         self.exit_event.set()
         if not without_plot:
-            self.dots = self.ax_3d.scatter([],[],[], color='black', s=20, depthshade=0)
-            self.nest_mark = self.ax_3d.scatter([],[],[], color='red', marker='X', s=30, depthshade=0)
             self.update_plot()
 
     def run(self):
         func = self.test_function_var.get()        
+        func_info = self.TEST_FUNCTIONS[func]
         print(f'run: {func}')
         self.anthill = Anthill(
             ants_number=self.get_int(self.input_ants_nbr),
@@ -201,9 +199,19 @@ class App():
             )
         )
         try:
+            try: self.ax_3d.remove()
+            except: pass
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.pcolor(func_info['X'], func_info['Y'], func_info['Z'])     
+            self.show_nest(*self.anthill.nest)
+            self.fig.tight_layout()
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack(fill='both', expand=True)
+            self.toolbar.update() 
+            self.canvas.get_tk_widget().pack()           
+            self.anthill.initialize_system()                  
             self.exit_event.clear()
             self.iteration_per_second = self.speed_val.get()
-            self.update_plot()
             th = threading.Thread(target=self.run_algorithm, daemon=True)
             self.btn_run.pack_forget()
             self.btn_stop.pack(**self.btn_parameters)
@@ -220,22 +228,10 @@ class App():
         self.exit_event.set()
 
     def run_algorithm(self):        
-        print('Run algorithm')
-        func_info = self.TEST_FUNCTIONS[self.test_function_var.get()]
+        print('Run algorithm')        
         now = time.time()
         timeout = now + 60*5        
-        iteration = 0 
-        try: self.ax_3d.remove()
-        except: pass
-        self.ax = self.fig.add_subplot(1, 1, 1)  
-        self.ax.pcolor(func_info['X'], func_info['Y'], func_info['Z'])     
-        self.fig.tight_layout()
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill='both', expand=True)
-        self.toolbar.update() 
-        self.canvas.get_tk_widget().pack()           
-        self.anthill.initialize_system()
-        self.show_nest(*self.anthill.nest)
+        iteration = 0   
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
             self.label_iteration.config(text=str(iteration))
@@ -286,11 +282,9 @@ class App():
         self.canvas.get_tk_widget().pack()
 
     def update_plot_ants(self, ants: list = [[], [], []]):
-        self.dots._offsets3d = ants
         self.canvas.draw_idle()
 
     def show_nest(self, x, y, z):
-        func_info = self.TEST_FUNCTIONS[self.test_function_var.get()]
-
+        self.ax.plot(x, y, color='r', markersize=10, zorder=10)
 
 app = App()

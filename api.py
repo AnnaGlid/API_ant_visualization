@@ -19,6 +19,7 @@ class Anthill():
         self.space = {'X': space[0], 'Y': space[1], 'Z': space[2]}
         self.extremum_type = extremum_type
         self.extremum_point = extremum_point
+        self.initialize_system()
 
     def initialize_system(self):
         self.nest = self.q_rand()
