@@ -123,6 +123,16 @@ class App():
         self.input_ant_moves = tb.Entry(frame_ant_moves, width=10)
         self.input_ant_moves.pack(padx=10, pady=5) 
 
+        frame_a_site = tb.LabelFrame(lframe_parameters, text="A site")
+        frame_a_site.pack(pady=10)
+        self.input_a_site = tb.Entry(frame_a_site, width=10)
+        self.input_a_site.pack(padx=10, pady=5) 
+
+        frame_a_local = tb.LabelFrame(lframe_parameters, text="A local")
+        frame_a_local.pack(pady=10)
+        self.input_a_local = tb.Entry(frame_a_local, width=10)
+        self.input_a_local.pack(padx=10, pady=5) 
+
         self.test_function_var = tk.StringVar(lframe_parameters)
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
@@ -172,6 +182,8 @@ class App():
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
         self.set_text(self.input_ant_moves, '5')
+        self.set_text(self.input_a_site, '0.010')
+        self.set_text(self.input_a_local, '0.001')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         # self.auto_run_var.set(1)
         self.speed_val.set(10)
@@ -200,7 +212,9 @@ class App():
                 func_info['extremum_y'],
                 func_info['extremum_val']
             ),
-            func=func_info['func']
+            func=func_info['func'],
+            a_site = self.get_float(self.input_a_site),
+            a_local = self.get_float(self.input_a_local)
         )
         try:
             try: self.ax_3d.remove()
@@ -264,8 +278,17 @@ class App():
         try:
             return int(value)
         except Exception as ex:
-            Messagebox.show_error(f'Error while getting value from input "{value}": {ex}')
+            Messagebox.show_error(f'Error while getting int value from input "{value}": {ex}')
     
+    def get_float(self, widget: tb.Entry):
+        value = widget.get()
+        try:
+            fl = float(value)
+        except Exception as ex:
+            Messagebox.show_error(f'Error while getting float value from input "{value}": {ex}')
+        if fl < 0 or fl > 1:
+            Messagebox.show_error(f'Value {value} is out of range [0, 1]!')
+
     def set_text(self, widget, text):
         widget.delete(0,tk.END)
         widget.insert(0, text)

@@ -27,7 +27,8 @@ class Ant():
 class Anthill():
 
     def __init__(self, ants_number: int, memory_slots: int, t_moves: int, 
-                 space: list, extremum_type: str, extremum_point: tuple[float], func):
+                 space: list, extremum_type: str, extremum_point: tuple[float], 
+                 func, a_site: float, a_local: float):
         self.space = {'X': space[0], 'Y': space[1], 'Z': space[2]}
         self.func = func
         self.nest = self.q_rand()        
@@ -35,6 +36,8 @@ class Anthill():
         self.t_moves = t_moves        
         self.extremum_type = extremum_type
         self.extremum_point = extremum_point        
+        self.a_site = a_site
+        self.a_local = a_local
         
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
