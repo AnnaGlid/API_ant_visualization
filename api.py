@@ -9,11 +9,13 @@ class Spot():
         self.y = y 
         self.z = z
         self.success = success
+        self.failed = 0
 
 class Ant():
 
     def __init__(self, idx, memory_slots: int, nest: list[float], space: list, func):
         self.memory = [None for i in range(memory_slots)]
+        self.memory_slots = memory_slots
         self.space = space
         self.nest = nest
         self.func = func
@@ -52,6 +54,9 @@ class Ant():
         for idx, slot in enumerate(self.memory):
             if not slot:
                 self.memory[idx] = spot
+    
+    def clean_memory(self):
+        self.memory = [None for i in self.memory_slots]
 
 
 class Anthill():
@@ -77,6 +82,30 @@ class Anthill():
         for ant in self.ants:
             if any([slot is None for slot in ant.memory]):
                 ant.find_new_spot()
+                ant.explore_current_spot()
+            else:
+                if ant.current_spot.success:
+                    ant.explore_current_spot()
+                else:
+                    ant.choose_random_spot_from_memory()
+                    ant.explore_current_spot()
+        self.sort_out_ants_memory()
+        for idx in range(len(self.ants) - 1):
+            self.tandem_run(self.ants[idx], self.ants[idx+1])
+
+    def move_nest(self):
+        best_spot = None
+        best_spot_val = 99999999999 if self.extremum_type == 'min' else -9999999999
+        for ant in self.ants:
+            for spot in ant.memory:
+                if (self.extremum_type == 'min' and spot.z < best_spot_val) or \
+                    (self.extremum_type == 'max' and spot.z > best_spot_val):
+                    best_spot = spot
+                    best_spot_val = spot.z
+        self.nest = [best_spot.x, best_spot.y, best_spot.z]
+
+        for ant in self.ants:
+            ant.clean_memory()
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
