@@ -262,7 +262,7 @@ class App():
         time.sleep(1)
         ants_in_extr = self.anthill.get_ants_in_extr()
         self.label_ants_number.config(text = str(ants_in_extr))
-        self.show_ants(self.anthill.get_ants())
+        # self.show_ants(self.anthill.get_ants())
         self.canvas.draw_idle()       
         while not self.exit_event.is_set() and time.time() < timeout:                          
             curr_ants_in_extr = self.anthill.get_ants_in_extr()

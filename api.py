@@ -130,6 +130,8 @@ class Anthill():
         best_spot_val = 99999999999 if self.extremum_type == 'min' else -9999999999
         for ant in self.ants:
             for spot in ant.memory:
+                if not spot:
+                    continue
                 if (self.extremum_type == 'min' and spot.z < best_spot_val) or \
                     (self.extremum_type == 'max' and spot.z > best_spot_val):
                     best_spot = spot
@@ -141,30 +143,25 @@ class Anthill():
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
-            min_a = min(place.z for place in ant_a.memory)
-            min_b = min(place.z for place in ant_b.memory)
+            min_a = min(place.z for place in ant_a.memory if place)
+            min_b = min(place.z for place in ant_b.memory if place)
             if min_a <= min_b:
-                best_place = next(filter(lambda x: x.z == min_a, ant_a.memory))
-                place_to_replace = next(filter(lambda x: x.z == min_b, ant_b.memory))
+                best_place = next(filter(lambda x: x and x.z == min_a, ant_a.memory))
+                place_to_replace = next(filter(lambda x: x and x.z == min_b, ant_b.memory))
                 ant_b.memory.remove(place_to_replace)
                 ant_b.memory.append(best_place)
             else:
-                best_place = next(filter(lambda x: x.z == min_b, ant_b.memory))
-                place_to_replace = next(filter(lambda x: x.z == min_a, ant_a.memory))
+                best_place = next(filter(lambda x: x and x.z == min_b, ant_b.memory))
+                place_to_replace = next(filter(lambda x: x and x.z == min_a, ant_a.memory))
                 ant_a.memory.remove(place_to_replace)
                 ant_a.memory.append(best_place)                
     
     def sort_out_ants_memory(self):
         for ant in self.ants:
-            new_memory = []
-            deleted = 0
             for spot in ant.memory:
-                if spot.failed > self.failed_explo:
-                    deleted += 1
-                else:
-                    new_memory.append(spot)
-            for i in range(deleted):
-                new_memory.append(None)
+                if spot and spot.failed > self.failed_explo:
+                    ant.memory.remove(spot)
+                    ant.memory.append(None)
 
     def q_rand(self):
         x = random.choice(self.space['X'])
