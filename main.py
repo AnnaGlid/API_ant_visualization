@@ -205,6 +205,8 @@ class App():
         try:
             try: self.ax_3d.remove()
             except: pass
+            try: self.ax.remove()
+            except: pass
             self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.pcolor(func_info['X'], func_info['Y'], func_info['Z'])     
             self.show_nest(*self.anthill.nest)
