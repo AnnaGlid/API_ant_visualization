@@ -36,8 +36,9 @@ class Anthill():
         self.t_moves = t_moves        
         self.extremum_type = extremum_type
         self.extremum_point = extremum_point        
-        self.a_site = a_site
-        self.a_local = a_local
+        self.a_site_par = a_site
+        self.a_site_x = (1/a_site)**(1/ants_number)
+        self.a_local_par = a_local
         
     def move(self):
         pass
@@ -64,6 +65,13 @@ class Anthill():
     
     def q_explo(self, amplitude: float):
         pass
+
+    def a_site(self, ant_idx):
+        val = (self.a_site_x**ant_idx) * self.a_site_par
+        print(f'A site value: {val}')
+        if val < 0 or val > 1:
+            raise Exception(f'Invalid a site value: {val}')
+        return val
 
     def get_ants(self) -> list:        
         return [ant.pos for ant in self.ants]
