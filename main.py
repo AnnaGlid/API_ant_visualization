@@ -202,6 +202,7 @@ class App():
             self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.pcolor(func_info['X'], func_info['Y'], func_info['Z'])     
             self.show_nest(*self.anthill.nest)
+            self.show_ants(self.anthill.get_ants())
             self.fig.tight_layout()
             self.canvas.draw()
             self.canvas.get_tk_widget().pack(fill='both', expand=True)
@@ -229,13 +230,14 @@ class App():
         print('Run algorithm')        
         now = time.time()
         timeout = now + 60*5        
-        iteration = 0   
+        iteration = 0
         time.sleep(2)
         while not self.exit_event.is_set() and time.time() < timeout:
             iteration += 1
+            self.show_ants()
+            self.canvas.draw_idle()
             self.label_iteration.config(text=str(iteration))
-            self.label_iteration.update()
-
+            self.label_iteration.update()            
             time.sleep((1 / self.speed_val.get()) * 5)
 
         if time.time() >= timeout:
@@ -280,10 +282,16 @@ class App():
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
 
-    def update_plot_ants(self, ants: list = [[], [], []]):
-        self.canvas.draw_idle()
-
     def show_nest(self, x, y, z):
-        self.ax.plot(x, y, color='r', marker='X', markersize=10, zorder=10)
+        self.nest_mark, _ = self.ax.plot(x, y, color='r', marker='X', markersize=10, zorder=10)
 
+    def show_ants(self, ants: list[tuple[float]]):
+        self.ant_marks, _ = self.ax.plot([ant[0] for ant in ants], [ant[1] for ant in ants], 'o', color='black')
+
+    def move_nest(self, x, y, z):
+        self.nest_mark.set_data(x, y)
+
+    def move_ants(self, ants: list[tuple[float]]):
+        self.ant_marks.set_data([ant[0] for ant in ants], [ant[1] for ant in ants])
+        
 app = App()
