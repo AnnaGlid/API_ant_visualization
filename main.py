@@ -101,12 +101,12 @@ class App():
         
         frame_nest_pos = tb.LabelFrame(top_frame, text="Nest coordinates")
         frame_nest_pos.grid(row=0, column=2, padx=10, pady=0, sticky='e')
-        self.label_nest_pos = tb.Label(frame_nest_pos, text='None', width=35)
+        self.label_nest_pos = tb.Label(frame_nest_pos, text='None', width=45)
         self.label_nest_pos.pack(padx=(30, 10), pady=10)
 
         frame_func_extr = tb.LabelFrame(top_frame, text="Function extremum")
         frame_func_extr.grid(row=0, column=3, padx=10, pady=0, sticky='e')
-        self.label_func_extr = tb.Label(frame_func_extr, width=35)
+        self.label_func_extr = tb.Label(frame_func_extr, width=45)
         self.label_func_extr.pack(padx=(30, 10), pady=10)                
         #endregion
 
@@ -324,8 +324,8 @@ class App():
             val = int(value)
         except Exception as ex:
             Messagebox.show_error(f'Error while getting int value from input "{value}": {ex}')
-        if val < 1 or val > 2000:
-            Messagebox.show_error(f'Value {val} is out of range [1, 2000]')
+        if val < 1 or val > 5000:
+            Messagebox.show_error(f'Value {val} is out of range [1, 5000]')
         else:
             return val
     
