@@ -10,6 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from api import Anthill
 
+# 1. Co jeśli mrówka wylosuje miejsce poza dziedziną?
+
 def rastrigin(x: float, y: float) -> float:
     return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
 
@@ -86,16 +88,26 @@ class App():
         #region top
         frame_iteration = tb.LabelFrame(top_frame, text='Iteration')
         frame_iteration.grid(row=0, column=0, padx=10, pady=2, sticky='e')
-        self.label_iteration = tb.Label(frame_iteration, text=0)
+        self.label_iteration = tb.Label(frame_iteration, text=0, width=5)
         self.label_iteration.pack(padx=50, pady=10)
         # frame_ants_number = tb.LabelFrame(top_frame, text="Number of ants in extremum")
         # frame_ants_number.grid(row=0, column=1, padx=10, pady=0, sticky='e')
         # self.label_ants_number = tb.Label(frame_ants_number, text='0')
         # self.label_ants_number.pack(padx=50, pady=10)
-        frame_nest_extr = tb.LabelFrame(top_frame, text="Nest in extremum")
-        frame_nest_extr.grid(row=0, column=1, padx=10, pady=0, sticky='e')
-        self.label_nest_extr = tb.Label(frame_nest_extr, text='No')
-        self.label_nest_extr.pack(padx=50, pady=10)
+        frame_nest_in_extr = tb.LabelFrame(top_frame, text="Nest in extremum")
+        frame_nest_in_extr.grid(row=0, column=1, padx=10, pady=0, sticky='e')
+        self.label_nest_in_extr = tb.Label(frame_nest_in_extr, text='No', width=5)
+        self.label_nest_in_extr.pack(padx=50, pady=10)
+        
+        frame_nest_pos = tb.LabelFrame(top_frame, text="Nest coordinates")
+        frame_nest_pos.grid(row=0, column=2, padx=10, pady=0, sticky='e')
+        self.label_nest_pos = tb.Label(frame_nest_pos, text='None', width=35)
+        self.label_nest_pos.pack(padx=(30, 10), pady=10)
+
+        frame_func_extr = tb.LabelFrame(top_frame, text="Function extremum")
+        frame_func_extr.grid(row=0, column=3, padx=10, pady=0, sticky='e')
+        self.label_func_extr = tb.Label(frame_func_extr, width=35)
+        self.label_func_extr.pack(padx=(30, 10), pady=10)                
         #endregion
 
         #region parameters
@@ -194,8 +206,11 @@ class App():
         # self.auto_run_var.set(1)
         self.speed_val.set(10)
         # self.label_ants_number.config(text="0")
-        self.label_nest_extr.config(text="No")
+        self.label_nest_in_extr.config(text="No")
         self.label_iteration.config(text="0")
+        func_data = self.TEST_FUNCTIONS[self.test_function_var.get()]
+        self.label_nest_pos.config(text="None")
+        self.label_func_extr.config(text=f'x: {func_data['extremum_x']};  y: {func_data['extremum_y']};  z: {func_data['extremum_val']}')
         self.exit_event.set()
         if not without_plot:
             self.update_plot()
@@ -272,7 +287,7 @@ class App():
             #     self.label_ants_number.config(text = str(ants_in_extr))
             curr_nest_in_extr = self.anthill.get_nest_in_extr()
             if nest_in_extr != curr_nest_in_extr:
-                self.label_nest_extr.config(text = 'Yes' if curr_nest_in_extr else 'No')
+                self.label_nest_in_extr.config(text = 'Yes' if curr_nest_in_extr else 'No')
             for move in range(self.anthill.t_moves):
                 self.anthill.move()
                 self.move_ants(self.anthill.get_ants())
@@ -280,6 +295,9 @@ class App():
                 time.sleep(1 / (self.speed_val.get() * 20))
             self.anthill.move_nest()
             self.move_nest(*self.anthill.nest)
+            nx, ny, nz = self.anthill.nest
+            self.label_nest_pos.config(text=f'x: {round(nx, 5)};  y: {round(ny, 5)};  z: {round(nz, 5)}')
+            self.label_nest_pos.update()
             self.canvas.draw_idle()
             iteration += 1            
             self.label_iteration.config(text=str(iteration))     
@@ -331,6 +349,8 @@ class App():
         chosen_func = self.test_function_var.get()
         print('chosen func: ' + chosen_func)
         func_data = self.TEST_FUNCTIONS[chosen_func]
+        self.label_func_extr.config(text=f'x: {func_data['extremum_x']};  y: {func_data['extremum_y']};  z: {func_data['extremum_val']}')        
+        self.label_nest_pos.config(text="None")
         try: self.ax_3d.clear()
         except: pass
         try: self.ax.remove()
