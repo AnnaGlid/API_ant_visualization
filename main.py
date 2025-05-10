@@ -88,10 +88,14 @@ class App():
         frame_iteration.grid(row=0, column=0, padx=10, pady=2, sticky='e')
         self.label_iteration = tb.Label(frame_iteration, text=0)
         self.label_iteration.pack(padx=50, pady=10)
-        frame_ants_number = tb.LabelFrame(top_frame, text="Number of ants in extremum")
-        frame_ants_number.grid(row=0, column=1, padx=10, pady=0, sticky='e')
-        self.label_ants_number = tb.Label(frame_ants_number, text='0')
-        self.label_ants_number.pack(padx=50, pady=10)
+        # frame_ants_number = tb.LabelFrame(top_frame, text="Number of ants in extremum")
+        # frame_ants_number.grid(row=0, column=1, padx=10, pady=0, sticky='e')
+        # self.label_ants_number = tb.Label(frame_ants_number, text='0')
+        # self.label_ants_number.pack(padx=50, pady=10)
+        frame_nest_extr = tb.LabelFrame(top_frame, text="Nest in extremum")
+        frame_nest_extr.grid(row=0, column=1, padx=10, pady=0, sticky='e')
+        self.label_nest_extr = tb.Label(frame_nest_extr, text='No')
+        self.label_nest_extr.pack(padx=50, pady=10)
         #endregion
 
         #region parameters
@@ -145,10 +149,6 @@ class App():
             tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn, command=self.update_plot)\
                             .pack(padx=10, pady=5)
 
-        # self.auto_run_var = tk.IntVar(lframe_parameters, 1)
-        # auto_run = tb.Checkbutton(lframe_parameters, text="Auto run", variable=self.auto_run_var)
-        # auto_run.pack(pady=10)
-
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
         self.speed_val = tk.IntVar(lframe_parameters, 10)
@@ -193,7 +193,8 @@ class App():
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         # self.auto_run_var.set(1)
         self.speed_val.set(10)
-        self.label_ants_number.config(text="0")
+        # self.label_ants_number.config(text="0")
+        self.label_nest_extr.config(text="No")
         self.label_iteration.config(text="0")
         self.exit_event.set()
         if not without_plot:
@@ -260,28 +261,30 @@ class App():
         timeout = now + 60*10        
         iteration = 0
         time.sleep(1)
-        ants_in_extr = self.anthill.get_ants_in_extr()
-        self.label_ants_number.config(text = str(ants_in_extr))
-        # self.show_ants(self.anthill.get_ants())
+        # ants_in_extr = self.anthill.get_ants_in_extr()
+        # self.label_ants_number.config(text = str(ants_in_extr))
+        nest_in_extr = False
         self.canvas.draw_idle()       
         while not self.exit_event.is_set() and time.time() < timeout:                          
-            curr_ants_in_extr = self.anthill.get_ants_in_extr()
-            if ants_in_extr != curr_ants_in_extr:
-                ants_in_extr = curr_ants_in_extr
-                self.label_ants_number.config(text = str(ants_in_extr))
-
+            # curr_ants_in_extr = self.anthill.get_ants_in_extr()
+            # if ants_in_extr != curr_ants_in_extr:
+            #     ants_in_extr = curr_ants_in_extr
+            #     self.label_ants_number.config(text = str(ants_in_extr))
+            curr_nest_in_extr = self.anthill.get_nest_in_extr()
+            if nest_in_extr != curr_nest_in_extr:
+                self.label_nest_extr.config(text = 'Yes' if curr_nest_in_extr else 'No')
             for move in range(self.anthill.t_moves):
                 self.anthill.move()
                 self.move_ants(self.anthill.get_ants())
                 self.canvas.draw_idle()
-                time.sleep(1 / (self.speed_val.get() * 10))
+                time.sleep(1 / (self.speed_val.get() * 20))
             self.anthill.move_nest()
             self.move_nest(*self.anthill.nest)
             self.canvas.draw_idle()
             iteration += 1            
             self.label_iteration.config(text=str(iteration))     
             self.label_iteration.update()                      
-            time.sleep((1 / self.speed_val.get()) * 10)           
+            time.sleep((1 / self.speed_val.get()) * 5)           
 
         if time.time() >= timeout:
             print('Timeout!')

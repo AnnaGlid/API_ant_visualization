@@ -137,7 +137,10 @@ class Anthill():
                     (self.extremum_type == 'max' and spot.z > best_spot_val):
                     best_spot = spot
                     best_spot_val = spot.z
-        self.nest = [best_spot.x, best_spot.y, best_spot.z]
+        if best_spot:
+            self.nest = [best_spot.x, best_spot.y, best_spot.z]
+        else:
+            print('Did not find best spot!')
 
         for ant in self.ants:
             ant.nest = self.nest
@@ -173,12 +176,18 @@ class Anthill():
     def get_ants(self) -> list:        
         return [ant.pos for ant in self.ants]
     
-    def get_ants_in_extr(self):
-        count = 0
+    # def get_ants_in_extr(self):
+    #     count = 0
+    #     ex_x, ex_y, ex_z = self.extremum_point
+    #     for ant in self.ants:
+    #         x = ant.pos[0]
+    #         y = ant.pos[1]
+    #         if x == ex_x and y == ex_y:
+    #             count += 1
+    #     return count
+    
+    def get_nest_in_extr(self):
         ex_x, ex_y, ex_z = self.extremum_point
-        for ant in self.ants:
-            x = ant.pos[0]
-            y = ant.pos[1]
-            if x == ex_x and y == ex_y:
-                count += 1
-        return count
+        if self.nest[0] == ex_x and self.nest[1] == ex_y:
+            return True
+        return False
