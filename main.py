@@ -14,7 +14,7 @@ def rastrigin(x: float, y: float) -> float:
     return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
 
 def schwefel(x: float, y: float) -> float:
-    return x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y)))
+    return - (x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y))))
 
 class App():
 
@@ -257,7 +257,7 @@ class App():
     def run_algorithm(self):        
         print('Run algorithm')        
         now = time.time()
-        timeout = now + 60*5        
+        timeout = now + 60*10        
         iteration = 0
         time.sleep(1)
         ants_in_extr = self.anthill.get_ants_in_extr()
@@ -274,8 +274,9 @@ class App():
                 self.anthill.move()
                 self.move_ants(self.anthill.get_ants())
                 self.canvas.draw_idle()
-                time.sleep(1 / (self.speed_val.get() * 5))
+                time.sleep(1 / (self.speed_val.get() * 10))
             self.anthill.move_nest()
+            self.move_nest(*self.anthill.nest)
             self.canvas.draw_idle()
             iteration += 1            
             self.label_iteration.config(text=str(iteration))     
@@ -284,6 +285,8 @@ class App():
 
         if time.time() >= timeout:
             print('Timeout!')
+            self.exit_event.set()
+            self.reset_parameters()            
 
     def wait_for_finish(self):
         if self.exit_event.is_set():

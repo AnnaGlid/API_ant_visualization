@@ -80,6 +80,7 @@ class Ant():
         if (self.extremum_type == 'min' and spot_nearby_val < self.current_spot.z) or\
             (self.extremum_type == 'max' and spot_nearby_val > self.current_spot.z):
             self.current_spot.success = True
+            self.current_spot = Spot(spot_nearby[0], spot_nearby[1], spot_nearby_val, True)
         else:
             self.current_spot.success = False
             self.current_spot.failed += 1
@@ -139,18 +140,19 @@ class Anthill():
         self.nest = [best_spot.x, best_spot.y, best_spot.z]
 
         for ant in self.ants:
+            ant.nest = self.nest
             ant.clean_memory()
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
             min_a = min(place.z for place in ant_a.memory if place)
             min_b = min(place.z for place in ant_b.memory if place)
-            if min_a <= min_b:
+            if min_a < min_b:
                 best_place = next(filter(lambda x: x and x.z == min_a, ant_a.memory))
                 place_to_replace = next(filter(lambda x: x and x.z == min_b, ant_b.memory))
                 ant_b.memory.remove(place_to_replace)
                 ant_b.memory.append(best_place)
-            else:
+            elif min_a > min_b:
                 best_place = next(filter(lambda x: x and x.z == min_b, ant_b.memory))
                 place_to_replace = next(filter(lambda x: x and x.z == min_a, ant_a.memory))
                 ant_a.memory.remove(place_to_replace)
