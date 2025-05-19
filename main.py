@@ -26,17 +26,45 @@ from api import Anthill
 
 # w przypadku gdy mrówka wylatuje poza dziedzinę, to odbicie lustrzane
 
-def rastrigin(x: float|np.ndarray, y: float|np.ndarray) -> float:
+def rastrigin(x: float|np.ndarray, y: float|np.ndarray):
     return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))  
 
-def schwefel(x: float|np.ndarray, y: float|np.ndarray) -> float:
+def schwefel(x: float|np.ndarray, y: float|np.ndarray):
     return - (x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y))))
+
+def sferic(x: float|np.ndarray, y: float|np.ndarray):
+    return x**2 + y**2
+
 
 class App():
 
     ELEMENTS = 100    
     TEST_FUNCTIONS = {
-        'F. Rastrigin': {
+        'Sferic model': {
+            'type': 'min',
+            'extremum_val': 0,
+            'extremum_x': 0,
+            'extremum_y': 0,
+            'domain_min': -5.12,
+            'domain_max': 5.12,
+            'func': sferic          
+        },
+        "Shekel's foxholes": {
+            # 1 parametr
+        },
+        "Perm's f.": {
+            # 1 parametr
+        },
+        "Rosenbrock's f.": {
+            # 0 parametrow
+        },
+        "Michalewicz's f.": {
+            # 0 parametrow
+        },
+        "Easom's f.": {
+            # 0 parametrow
+        },        
+        "Rastrigin's f.": {
             'type': 'min',
             'extremum_val': 0,
             'extremum_x': 0,
@@ -45,7 +73,7 @@ class App():
             'domain_max': 5.12,            
             'func': rastrigin
         },
-        'F. Schwefel': {
+        "Schwefel's  f.": {
             'type': 'min',
             'extremum_val': -418.9829 * 2,
             'extremum_x': 420.9687,
@@ -53,6 +81,12 @@ class App():
             'domain_min': -500,
             'domain_max': 500,
             'func': schwefel
+        },
+        "Ackley's f.": {
+
+        },
+        "Griewank's f.": {
+            
         }
     } 
 
