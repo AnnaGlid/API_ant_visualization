@@ -13,7 +13,6 @@ from api import Anthill
 # Czy pozwalać na zmianę parametrów dla shekela i perma? Nie - jakie parametry?
 # shekel - jaki wzór? Jak ma wyglądać macierz, jak ją obliczyć?
 
-# zmienić a local na wartość jak w pracy dyplomowej
 
 # dodać pamięć globalną, która pamięta i porównuje kolejne położenia gniazda
 # (i nie zmienia na gorsze)
@@ -183,10 +182,6 @@ class App():
         frame_iteration.grid(row=0, column=0, padx=10, pady=2, sticky='e')
         self.label_iteration = tb.Label(frame_iteration, text=0, width=5)
         self.label_iteration.pack(padx=50, pady=10)
-        # frame_ants_number = tb.LabelFrame(top_frame, text="Number of ants in extremum")
-        # frame_ants_number.grid(row=0, column=1, padx=10, pady=0, sticky='e')
-        # self.label_ants_number = tb.Label(frame_ants_number, text='0')
-        # self.label_ants_number.pack(padx=50, pady=10)
         frame_nest_in_extr = tb.LabelFrame(top_frame, text="Nest in extremum")
         frame_nest_in_extr.grid(row=0, column=1, padx=10, pady=0, sticky='e')
         self.label_nest_in_extr = tb.Label(frame_nest_in_extr, text='No', width=5)
@@ -357,18 +352,13 @@ class App():
         timeout = now + 60*10        
         iteration = 0
         time.sleep(1)
-        # ants_in_extr = self.anthill.get_ants_in_extr()
-        # self.label_ants_number.config(text = str(ants_in_extr))
         nest_in_extr = False
         self.canvas.draw_idle()       
         while not self.exit_event.is_set() and time.time() < timeout:                          
-            # curr_ants_in_extr = self.anthill.get_ants_in_extr()
-            # if ants_in_extr != curr_ants_in_extr:
-            #     ants_in_extr = curr_ants_in_extr
-            #     self.label_ants_number.config(text = str(ants_in_extr))
             curr_nest_in_extr = self.anthill.get_nest_in_extr()
             if nest_in_extr != curr_nest_in_extr:
                 self.label_nest_in_extr.config(text = 'Yes' if curr_nest_in_extr else 'No')
+                self.exit_event.set()
             for move in range(self.anthill.t_moves):
                 self.anthill.move()
                 self.move_ants(self.anthill.get_ants())
