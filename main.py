@@ -10,8 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from api import Anthill
 
-# 1. Co jeśli mrówka wylosuje miejsce poza dziedziną?
-# 2. Jak ustawić A local? - na sztywno
+# Czy pozwalać na zmianę parametrów dla shekela i perma? Nie - jakie parametry?
+# shekel - jaki wzór? Jak ma wyglądać macierz, jak ją obliczyć?
 
 # zmienić a local na wartość jak w pracy dyplomowej
 
@@ -19,8 +19,6 @@ from api import Anthill
 # (i nie zmienia na gorsze)
 
 # odległość od optimum - krzywa zbieżności
-
-# dodać funkcję - model sferyczny
 
 # tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
 
@@ -52,6 +50,17 @@ def ackley(x: float|np.ndarray, y: float|np.ndarray):
 def griewank(x: float|np.ndarray, y: float|np.ndarray):
     return ((x**2 + y**2)/4000) - (np.cos(x) * np.cos(y / np.sqrt(2))) + 1
 
+def perm(x: float|np.ndarray, y: float|np.ndarray):
+    b = 10
+    return ((1 + b)*(x**1 - (1/1)**1) + (2 + b)*(y**1 - (1/2)**1) )**2 \
+        +  ((1 + b)*(x**2 - (1/1)**2) + (2 + b)*(y**2 - (1/2)**2) )**2
+
+
+
+
+    # return (1**1 + b) * (((x/1)**1) -1) + (2**1 + b) * (((y/2)**1) - 1) \
+    #     +  (1**2 + b) * (((x/1)**2) -1) + (2**2 + b) * (((y/2)**2) - 1)
+
 class App():
 
     ELEMENTS = 100    
@@ -66,11 +75,17 @@ class App():
             'func': sferic          
         },
         # "Shekel's foxholes": {
-        #     # 1 parametr
+  
         # },
-        # "Perm's f.": {
-        #     # 1 parametr
-        # },
+        "Perm's f.": {
+            'type': 'min',
+            'extremum_val': 0,
+            'extremum_x': 1,
+            'extremum_y': 0.5,
+            'domain_min': -1,
+            'domain_max': 1,
+            'func': perm      
+        },
         "Rosenbrock's f.": {
             'type': 'min',
             'extremum_val': 0,
