@@ -49,6 +49,9 @@ def ackley(x: float|np.ndarray, y: float|np.ndarray):
             - np.exp(0.5 * (np.cos(2*np.pi*x) + np.cos(2*np.pi*y))) \
             + 20 + np.e
 
+def griewank(x: float|np.ndarray, y: float|np.ndarray):
+    return ((x**2 + y**2)/4000) - (np.cos(x) * np.cos(y / np.sqrt(2))) + 1
+
 class App():
 
     ELEMENTS = 100    
@@ -122,9 +125,15 @@ class App():
             'domain_max': 32.768,
             'func': ackley
         },
-        # "Griewank's f.": {
-
-        # }
+        "Griewank's f.": {
+            'type': 'min',
+            'extremum_val': 0,
+            'extremum_x': 0,
+            'extremum_y': 0,
+            'domain_min': -600,
+            'domain_max': 600,
+            'func': griewank
+        }
     } 
 
     print('Calculating functions...')
