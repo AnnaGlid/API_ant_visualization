@@ -47,13 +47,13 @@ class Ant():
         x = r * np.cos(alpha) + x
         y = r * np.sin(alpha) + y
         if x < self.space['X'][0]:
-            x = self.space['X'][0]
+            x = self.space['X'][0] - x + self.space['X'][0]
         if x > self.space['X'][-1]:
-            x = self.space['X'][-1]
+            x = self.space['X'][-1] - (x - self.space['X'][-1])
         if y < self.space['Y'][0]:
-            y = self.space['Y'][0]
+            y = self.space['Y'][0] + (self.space['Y'][0] - y)
         if y > self.space['Y'][-1]:
-            y = self.space['Y'][-1]
+            y = self.space['Y'][-1] - (y - self.space['Y'][-1])
         return [x, y]
     
     def q_explo(self, amplitude: float) -> list[float, float]:
