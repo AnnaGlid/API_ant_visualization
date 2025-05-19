@@ -35,6 +35,9 @@ def schwefel(x: float|np.ndarray, y: float|np.ndarray):
 def sferic(x: float|np.ndarray, y: float|np.ndarray):
     return x**2 + y**2
 
+def rosenbrock(x: float|np.ndarray, y: float|np.ndarray):
+    return (x-1)**2 + 100 * (y - (x**2))**2
+
 
 class App():
 
@@ -49,21 +52,27 @@ class App():
             'domain_max': 5.12,
             'func': sferic          
         },
-        "Shekel's foxholes": {
-            # 1 parametr
-        },
-        "Perm's f.": {
-            # 1 parametr
-        },
+        # "Shekel's foxholes": {
+        #     # 1 parametr
+        # },
+        # "Perm's f.": {
+        #     # 1 parametr
+        # },
         "Rosenbrock's f.": {
-            # 0 parametrow
+            'type': 'min',
+            'extremum_val': 0,
+            'extremum_x': 1,
+            'extremum_y': 1,
+            'domain_min': -5,
+            'domain_max': 5,
+            'func': rosenbrock                
         },
-        "Michalewicz's f.": {
-            # 0 parametrow
-        },
-        "Easom's f.": {
-            # 0 parametrow
-        },        
+        # "Michalewicz's f.": {
+        #     # 0 parametrow
+        # },
+        # "Easom's f.": {
+        #     # 0 parametrow
+        # },        
         "Rastrigin's f.": {
             'type': 'min',
             'extremum_val': 0,
@@ -82,12 +91,12 @@ class App():
             'domain_max': 500,
             'func': schwefel
         },
-        "Ackley's f.": {
+        # "Ackley's f.": {
 
-        },
-        "Griewank's f.": {
-            
-        }
+        # },
+        # "Griewank's f.": {
+
+        # }
     } 
 
     print('Calculating functions...')
@@ -186,13 +195,10 @@ class App():
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
         combobox_function = tb.Combobox(frame_function, textvariable=self.test_function_var, 
-                                        state='readonly', width=10)
+                                        state='readonly', width=15)
         combobox_function.bind('<<ComboboxSelected>>', self.update_plot)
         combobox_function['values'] = list(self.TEST_FUNCTIONS)
         combobox_function.pack(padx=10, pady=5)
-        # for fn in list(self.TEST_FUNCTIONS):
-        #     tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn, command=self.update_plot)\
-        #                     .pack(padx=10, pady=5)
 
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
