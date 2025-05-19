@@ -17,8 +17,6 @@ from api import Anthill
 # dodać pamięć globalną, która pamięta i porównuje kolejne położenia gniazda
 # (i nie zmienia na gorsze)
 
-# odległość od optimum - krzywa zbieżności
-
 # tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
 
 # w przypadku gdy mrówka wylatuje poza dziedzinę, to odbicie lustrzane
