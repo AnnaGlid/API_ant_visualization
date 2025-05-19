@@ -11,9 +11,26 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from api import Anthill
 
 # 1. Co jeśli mrówka wylosuje miejsce poza dziedziną?
+# 2. Jak ustawić A local? - na sztywno
 
-def rastrigin(x: float, y: float) -> float:
-    return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
+# zmienić a local na wartość jak w pracy dyplomowej
+
+# dodać pamięć globalną, która pamięta i porównuje kolejne położenia gniazda
+# (i nie zmienia na gorsze)
+
+# odległość od optimum - krzywa zbieżności
+
+# dodać funkcję - model sferyczny
+
+# tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
+
+# w przypadku gdy mrówka wylatuje poza dziedzinę, to odbicie lustrzane
+
+def rastrigin(x: float|np.ndarray, y: float|np.ndarray) -> float:
+    if type(x) == np.ndarray:
+        return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))  
+    else:
+        return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
 
 def schwefel(x: float, y: float) -> float:
     return - (x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y))))
@@ -25,7 +42,7 @@ class App():
     r_x = np.linspace(-5.12, 5.12, ELEMENTS)
     r_y = np.linspace(-5.12, 5.12, ELEMENTS)
     r_X, r_Y = np.meshgrid(r_x, r_y)
-    r_Z = 10*2 + (r_X**2 - 10*np.cos(2*np.pi*r_X)) + (r_Y**2 - 10*np.cos(2*np.pi*r_Y))  
+    r_Z = 
 
     s_x = np.linspace(-500, 500, ELEMENTS)
     s_y = np.linspace(-500, 500, ELEMENTS)
