@@ -27,27 +27,14 @@ from api import Anthill
 # w przypadku gdy mrówka wylatuje poza dziedzinę, to odbicie lustrzane
 
 def rastrigin(x: float|np.ndarray, y: float|np.ndarray) -> float:
-    if type(x) == np.ndarray:
-        return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))  
-    else:
-        return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
+    return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))  
 
-def schwefel(x: float, y: float) -> float:
+def schwefel(x: float|np.ndarray, y: float|np.ndarray) -> float:
     return - (x * np.sin(np.sqrt(np.abs(x))) + y * np.sin(np.sqrt(np.abs(y))))
 
 class App():
 
     ELEMENTS = 100    
-
-    r_x = np.linspace(-5.12, 5.12, ELEMENTS)
-    r_y = np.linspace(-5.12, 5.12, ELEMENTS)
-    r_X, r_Y = np.meshgrid(r_x, r_y)
-    r_Z = 
-
-    s_x = np.linspace(-500, 500, ELEMENTS)
-    s_y = np.linspace(-500, 500, ELEMENTS)
-    s_X, s_Y = np.meshgrid(s_x, s_y)
-    s_Z = - (s_X * np.sin(np.sqrt(np.abs(s_X))) + s_Y * np.sin(np.sqrt(np.abs(s_Y))))
     TEST_FUNCTIONS = {
         'F. Rastrigin': {
             'type': 'min',
@@ -56,11 +43,6 @@ class App():
             'extremum_y': 0,
             'domain_min': -5.12,
             'domain_max': 5.12,            
-            'X': r_X,
-            'Y': r_Y,
-            'Z': r_Z,
-            'x': r_x,
-            'y': r_y,
             'func': rastrigin
         },
         'F. Schwefel': {
@@ -70,14 +52,19 @@ class App():
             'extremum_y': 420.9687,
             'domain_min': -500,
             'domain_max': 500,
-            'X': s_X,
-            'Y': s_Y,
-            'Z': s_Z,
-            'x': s_x,
-            'y': s_y,
             'func': schwefel
         }
     } 
+
+    print('Calculating functions...')
+    for func_name, val in TEST_FUNCTIONS.items():
+        TEST_FUNCTIONS[func_name]['x'] = np.linspace(val['domain_min'], val['domain_max'], ELEMENTS)
+        TEST_FUNCTIONS[func_name]['y'] = np.linspace(val['domain_min'], val['domain_max'], ELEMENTS)
+        f_X, f_Y = np.meshgrid(TEST_FUNCTIONS[func_name]['x'], TEST_FUNCTIONS[func_name]['y'])
+        TEST_FUNCTIONS[func_name]['X'] = f_X
+        TEST_FUNCTIONS[func_name]['Y'] = f_Y
+        TEST_FUNCTIONS[func_name]['Z'] = val['func'](f_X, f_Y)
+    print('Done.')
     
     def __init__(self):
         self.exit_event = threading.Event()            
@@ -131,16 +118,6 @@ class App():
         lframe_parameters = tb.LabelFrame(frame_parameters, text="Parameters")
         lframe_parameters.pack(ipadx=5, anchor='n')
 
-        # frame_x_min = tb.LabelFrame(lframe_parameters, text="Min x")
-        # frame_x_min.pack(pady=10)
-        # self.input_x_min = tb.Entry(frame_x_min, width=10)
-        # self.input_x_min.pack(padx=10, pady=5)
-
-        # frame_x_max = tb.LabelFrame(lframe_parameters, text="Max x")
-        # frame_x_max.pack(pady=10)
-        # self.input_x_max = tb.Entry(frame_x_max, width=10)
-        # self.input_x_max.pack(padx=10, pady=5)
-
         frame_ants_nbr = tb.LabelFrame(lframe_parameters, text="Number of ants")
         frame_ants_nbr.pack(pady=10)
         self.input_ants_nbr = tb.Entry(frame_ants_nbr, width=10)
@@ -174,9 +151,14 @@ class App():
         self.test_function_var = tk.StringVar(lframe_parameters)
         frame_function = tb.LabelFrame(lframe_parameters, text="Test function")
         frame_function.pack(pady=10)
-        for fn in list(self.TEST_FUNCTIONS):
-            tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn, command=self.update_plot)\
-                            .pack(padx=10, pady=5)
+        combobox_function = tb.Combobox(frame_function, textvariable=self.test_function_var, 
+                                        state='readonly', width=10)
+        combobox_function.bind('<<ComboboxSelected>>', self.update_plot)
+        combobox_function['values'] = list(self.TEST_FUNCTIONS)
+        combobox_function.pack(padx=10, pady=5)
+        # for fn in list(self.TEST_FUNCTIONS):
+        #     tb.Radiobutton(frame_function, text=fn, variable=self.test_function_var, value=fn, command=self.update_plot)\
+        #                     .pack(padx=10, pady=5)
 
         frame_speed = tb.LabelFrame(lframe_parameters, text="Timelapse speed")
         frame_speed.pack(pady=10)
@@ -361,7 +343,8 @@ class App():
         widget.delete(0,tk.END)
         widget.insert(0, text)
         
-    def update_plot(self):
+    def update_plot(self, widget = None):
+        ''' Widget is passed during binded action'''
         self.exit_event.set()
         chosen_func = self.test_function_var.get()
         print('chosen func: ' + chosen_func)
