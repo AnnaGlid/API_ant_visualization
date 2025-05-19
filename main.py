@@ -41,6 +41,10 @@ def rosenbrock(x: float|np.ndarray, y: float|np.ndarray):
 def michalewicz(x: float|np.ndarray, y: float|np.ndarray):
     return - np.sin(x) * (np.sin((x**2)/np.pi))**20 - np.sin(y) * (np.sin((2* y**2)/ np.pi))**20
 
+def easom(x: float|np.ndarray, y: float|np.ndarray):
+    return -np.cos(x) * np.cos(y) * np.exp(-((x - np.pi)**2 + (y - np.pi)**2))
+
+
 class App():
 
     ELEMENTS = 100    
@@ -78,9 +82,15 @@ class App():
             'domain_max': 5,
             'func': michalewicz
         },
-        # "Easom's f.": {
-        #     # 0 parametrow
-        # },        
+        "Easom's f.": {
+            'type': 'min',
+            'extremum_val': -1,
+            'extremum_x': np.pi,
+            'extremum_y': np.pi,
+            'domain_min': -100,
+            'domain_max': 100,
+            'func': easom
+        },        
         "Rastrigin's f.": {
             'type': 'min',
             'extremum_val': 0,
