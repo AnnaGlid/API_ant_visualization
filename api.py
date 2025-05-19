@@ -105,7 +105,7 @@ class Anthill():
         self.ants = [
             Ant(i, memory_slots, self.nest, self.space, func,
                 my_a_site = (a_site_x**i) * a_site,
-                my_a_local = a_local,
+                my_a_local = (a_site_x**i) * a_site / a_local,
                 max_side_len = x_len if x_len > y_len else y_len,
                 extremum_type=extremum_type)
             for i in range(1, ants_number+1)

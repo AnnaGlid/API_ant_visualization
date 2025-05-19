@@ -55,12 +55,6 @@ def perm(x: float|np.ndarray, y: float|np.ndarray):
     return ((1 + b)*(x**1 - (1/1)**1) + (2 + b)*(y**1 - (1/2)**1) )**2 \
         +  ((1 + b)*(x**2 - (1/1)**2) + (2 + b)*(y**2 - (1/2)**2) )**2
 
-
-
-
-    # return (1**1 + b) * (((x/1)**1) -1) + (2**1 + b) * (((y/2)**1) - 1) \
-    #     +  (1**2 + b) * (((x/1)**2) -1) + (2**2 + b) * (((y/2)**2) - 1)
-
 class App():
 
     ELEMENTS = 100    
@@ -233,7 +227,7 @@ class App():
         self.input_a_site = tb.Entry(frame_a_site, width=10)
         self.input_a_site.pack(padx=10, pady=5) 
 
-        frame_a_local = tb.LabelFrame(lframe_parameters, text="A local")
+        frame_a_local = tb.LabelFrame(lframe_parameters, text="A local parameter")
         frame_a_local.pack(pady=10)
         self.input_a_local = tb.Entry(frame_a_local, width=10)
         self.input_a_local.pack(padx=10, pady=5) 
@@ -285,18 +279,14 @@ class App():
         self.root.mainloop()        
 
     def reset_parameters(self, without_plot: bool = False):        
-        # self.set_text(self.input_x_min, '-1000')
-        # self.set_text(self.input_x_max, '1000')        
         self.set_text(self.input_ants_nbr, '20')
         self.set_text(self.input_ant_memory, '2')
         self.set_text(self.input_ant_moves, '5')
         self.set_text(self.input_a_site, '0.010')
-        self.set_text(self.input_a_local, '0.001')
+        self.set_text(self.input_a_local, '10')
         self.set_text(self.input_failed, '5')
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
-        # self.auto_run_var.set(1)
         self.speed_val.set(10)
-        # self.label_ants_number.config(text="0")
         self.label_nest_in_extr.config(text="No")
         self.label_iteration.config(text="0")
         func_data = self.TEST_FUNCTIONS[self.test_function_var.get()]
@@ -327,7 +317,7 @@ class App():
             ),
             func=func_info['func'],
             a_site = self.get_float(self.input_a_site),
-            a_local = self.get_float(self.input_a_local),
+            a_local = self.get_float(self.input_a_local, max=900000),
             failed_explo = self.get_int(self.input_failed)
         )
         try:
@@ -420,14 +410,14 @@ class App():
         else:
             return val
     
-    def get_float(self, widget: tb.Entry) -> float:
+    def get_float(self, widget: tb.Entry, min: int = 0, max: int = 1) -> float:
         value = widget.get()
         try:
             fl = float(value)
         except Exception as ex:
             Messagebox.show_error(f'Error while getting float value from input "{value}": {ex}')
-        if fl < 0 or fl > 1:
-            Messagebox.show_error(f'Value {value} is out of range [0, 1]!')
+        if fl < min or fl > max:
+            Messagebox.show_error(f'Value {value} is out of range [{min}, {max}]!')
         else:
             return fl
 
