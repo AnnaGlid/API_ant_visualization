@@ -44,6 +44,10 @@ def michalewicz(x: float|np.ndarray, y: float|np.ndarray):
 def easom(x: float|np.ndarray, y: float|np.ndarray):
     return -np.cos(x) * np.cos(y) * np.exp(-((x - np.pi)**2 + (y - np.pi)**2))
 
+def ackley(x: float|np.ndarray, y: float|np.ndarray):
+    return -20*np.exp(-0.2 * np.sqrt(0.5 * (x**2 + y**2))) \
+            - np.exp(0.5 * (np.cos(2*np.pi*x) + np.cos(2*np.pi*y))) \
+            + 20 + np.e
 
 class App():
 
@@ -109,9 +113,15 @@ class App():
             'domain_max': 500,
             'func': schwefel
         },
-        # "Ackley's f.": {
-
-        # },
+        "Ackley's f.": {
+            'type': 'min',
+            'extremum_val': 0,
+            'extremum_x': 0,
+            'extremum_y': 0,
+            'domain_min': -32.768,
+            'domain_max': 32.768,
+            'func': ackley
+        },
         # "Griewank's f.": {
 
         # }
