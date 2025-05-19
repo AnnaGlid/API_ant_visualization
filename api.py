@@ -181,3 +181,6 @@ class Anthill():
         if self.nest[0] == ex_x and self.nest[1] == ex_y:
             return True
         return False
+    
+    def get_dist_from_optimum(self):
+        return np.sqrt((self.nest[0] - self.extremum_point[0])**2 + (self.nest[1] - self.extremum_point[1])**2)

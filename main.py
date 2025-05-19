@@ -165,14 +165,20 @@ class App():
         self.root.geometry('{}x{}'.format(max_width, max_height))
         self.root.state('zoomed')
         root_frame = tb.Frame(self.root)
-        root_frame.grid(column=0, row=0, padx=50, pady=50)        
+        root_frame.grid(column=0, row=0, padx=50, pady=10)        
         root_frame.columnconfigure(0, weight=4)
         root_frame.columnconfigure(1, weight=1)
         root_frame.columnconfigure(2, weight=1)
+
         lframe_info = tb.LabelFrame(root_frame, text="Information")
         lframe_info.grid(column=1, row=0, columnspan=1, ipadx=5, sticky='ns', padx=(50,0))
         frame_graph = tb.Frame(root_frame)
         frame_graph.grid(row=0, column=0)   
+        frame_plot_dist = tb.Frame(frame_graph, padding=5)
+        frame_plot_dist.grid(row=0)
+        frame_plot_func = tb.Frame(frame_graph)
+        frame_plot_func.grid(row=1)
+
         frame_parameters = tb.Frame(root_frame)
         frame_parameters.grid(row=0, column=2, padx=5, sticky='ns')    
 
@@ -197,6 +203,11 @@ class App():
         frame_func_extr.grid(row=3, padx=10, pady=5, sticky='news')
         self.label_func_extr = tb.Label(frame_func_extr)
         self.label_func_extr.pack(padx=(30, 10), pady=10)                
+
+        frame_nest_dist = tb.LabelFrame(lframe_info, text="Distance to extremum", width=info_w_width)
+        frame_nest_dist.grid(row=4, padx=10, pady=5, sticky='news')
+        self.label_nest_dist = tb.Label(frame_nest_dist)
+        self.label_nest_dist.pack(padx=(30, 10), pady=10)       
         #endregion
 
         #region parameters
@@ -267,9 +278,15 @@ class App():
         self.dots = None
         self.reset_parameters(without_plot = True)
         #region plot
-        self.fig = Figure(figsize = (11, 5.8), dpi = 100)                           
-        self.canvas = FigureCanvasTkAgg(self.fig, master=frame_graph)
-        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_graph)      
+        self.fig_dist = Figure(figsize = (11, 2), dpi = 100)                                   
+        self.canvas_dist = FigureCanvasTkAgg(self.fig_dist, master=frame_plot_dist)
+        self.canvas_dist.draw()
+        self.canvas_dist.get_tk_widget().pack()
+        self.plot_dist = self.fig_dist.add_subplot()
+
+        self.fig = Figure(figsize = (11, 5.8), dpi = 100)                                   
+        self.canvas = FigureCanvasTkAgg(self.fig, master=frame_plot_func)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, frame_plot_func)      
         #endregion
         self.update_plot()        
         self.root.mainloop()        
@@ -281,6 +298,7 @@ class App():
         self.set_text(self.input_a_site, '0.010')
         self.set_text(self.input_a_local, '10')
         self.set_text(self.input_failed, '5')
+        self.label_nest_dist.config(text="None")
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.speed_val.set(10)
         self.label_nest_in_extr.config(text="No")
@@ -291,8 +309,11 @@ class App():
         self.exit_event.set()
         if not without_plot:
             self.update_plot()
+        self.dist_values = []
 
     def run(self):
+        self.plot_dist.clear()
+        self.dist_values = []
         func = self.test_function_var.get()        
         func_info = self.TEST_FUNCTIONS[func]
         print(f'run: {func}')
@@ -441,6 +462,8 @@ class App():
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         self.toolbar.update() 
         self.canvas.get_tk_widget().pack()
+        self.dist_values = []
+        self.plot_dist.clear()
 
     def show_nest(self, x, y, z):
         self.nest_mark, = self.ax.plot(x, y, color='r', marker='X', markersize=13, zorder=10)
@@ -452,6 +475,11 @@ class App():
 
     def move_nest(self, x, y, z):
         self.nest_mark.set_data(x, y)
+        curr_distance = self.anthill.get_dist_from_optimum()
+        self.dist_values.append(curr_distance)
+        self.label_nest_dist.config(text=str(round(curr_distance, 5)))
+        self.plot_dist.plot(self.dist_values)
+        self.canvas_dist.draw()
 
     def move_ants(self, ants: list[tuple[float]]):
         self.ant_marks.set_data([ant[0] for ant in ants], [ant[1] for ant in ants])
