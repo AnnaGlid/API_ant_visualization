@@ -38,6 +38,8 @@ def sferic(x: float|np.ndarray, y: float|np.ndarray):
 def rosenbrock(x: float|np.ndarray, y: float|np.ndarray):
     return (x-1)**2 + 100 * (y - (x**2))**2
 
+def michalewicz(x: float|np.ndarray, y: float|np.ndarray):
+    return - np.sin(x) * (np.sin((x**2)/np.pi))**20 - np.sin(y) * (np.sin((2* y**2)/ np.pi))**20
 
 class App():
 
@@ -67,9 +69,15 @@ class App():
             'domain_max': 5,
             'func': rosenbrock                
         },
-        # "Michalewicz's f.": {
-        #     # 0 parametrow
-        # },
+        "Michalewicz's f.": {
+            'type': 'min',
+            'extremum_val': -1.8013,
+            'extremum_x': 2.20319,
+            'extremum_y': 1.57049,
+            'domain_min': 0,
+            'domain_max': 5,
+            'func': michalewicz
+        },
         # "Easom's f.": {
         #     # 0 parametrow
         # },        
