@@ -100,8 +100,8 @@ class App():
         "Easom's f.": {
             'type': 'min',
             'extremum_val': -1,
-            'extremum_x': np.pi,
-            'extremum_y': np.pi,
+            'extremum_x': round(np.pi, 5),
+            'extremum_y': round(np.pi, 5),
             'domain_min': -100,
             'domain_max': 100,
             'func': easom
@@ -166,41 +166,42 @@ class App():
         self.root.state('zoomed')
         root_frame = tb.Frame(self.root)
         root_frame.grid(column=0, row=0, padx=50, pady=50)        
-        root_frame.rowconfigure(0, weight=1)
-        root_frame.rowconfigure(1, weight=4)
         root_frame.columnconfigure(0, weight=4)
         root_frame.columnconfigure(1, weight=1)
-        top_frame = tb.Frame(root_frame)
-        top_frame.grid(column=0, row=0, columnspan=1, pady=20, sticky='e')
+        root_frame.columnconfigure(2, weight=1)
+        lframe_info = tb.LabelFrame(root_frame, text="Information")
+        lframe_info.grid(column=1, row=0, columnspan=1, ipadx=5, sticky='ns', padx=(50,0))
         frame_graph = tb.Frame(root_frame)
-        frame_graph.grid(row=1, column=0)
+        frame_graph.grid(row=0, column=0)   
         frame_parameters = tb.Frame(root_frame)
-        frame_parameters.grid(row=0, column=1, padx=50, sticky='ns', rowspan=2)    
+        frame_parameters.grid(row=0, column=2, padx=5, sticky='ns')    
 
-        #region top
-        frame_iteration = tb.LabelFrame(top_frame, text='Iteration')
-        frame_iteration.grid(row=0, column=0, padx=10, pady=2, sticky='e')
-        self.label_iteration = tb.Label(frame_iteration, text=0, width=5)
+        #region info
+        info_w_width = 200
+        frame_iteration = tb.LabelFrame(lframe_info, text='Iteration', width=info_w_width)
+        frame_iteration.grid(row=0, column=0, padx=10, pady=(10,5), sticky='nesw')
+        self.label_iteration = tb.Label(frame_iteration, text=0)
         self.label_iteration.pack(padx=50, pady=10)
-        frame_nest_in_extr = tb.LabelFrame(top_frame, text="Nest in extremum")
-        frame_nest_in_extr.grid(row=0, column=1, padx=10, pady=0, sticky='e')
-        self.label_nest_in_extr = tb.Label(frame_nest_in_extr, text='No', width=5)
+
+        frame_nest_in_extr = tb.LabelFrame(lframe_info, text="Nest in extremum", width=info_w_width)
+        frame_nest_in_extr.grid(row=1, padx=10, pady=5, sticky='nesw')
+        self.label_nest_in_extr = tb.Label(frame_nest_in_extr, text='No', justify='left')
         self.label_nest_in_extr.pack(padx=50, pady=10)
         
-        frame_nest_pos = tb.LabelFrame(top_frame, text="Nest coordinates")
-        frame_nest_pos.grid(row=0, column=2, padx=10, pady=0, sticky='e')
-        self.label_nest_pos = tb.Label(frame_nest_pos, text='None', width=45)
+        frame_nest_pos = tb.LabelFrame(lframe_info, text="Nest coordinates", width=info_w_width)
+        frame_nest_pos.grid(row=2, padx=10, pady=5, sticky='nesw')
+        self.label_nest_pos = tb.Label(frame_nest_pos, text='None\n\n x', justify='left')
         self.label_nest_pos.pack(padx=(30, 10), pady=10)
 
-        frame_func_extr = tb.LabelFrame(top_frame, text="Function extremum")
-        frame_func_extr.grid(row=0, column=3, padx=10, pady=0, sticky='e')
-        self.label_func_extr = tb.Label(frame_func_extr, width=45)
+        frame_func_extr = tb.LabelFrame(lframe_info, text="Function extremum", width=info_w_width)
+        frame_func_extr.grid(row=3, padx=10, pady=5, sticky='news')
+        self.label_func_extr = tb.Label(frame_func_extr)
         self.label_func_extr.pack(padx=(30, 10), pady=10)                
         #endregion
 
         #region parameters
         lframe_parameters = tb.LabelFrame(frame_parameters, text="Parameters")
-        lframe_parameters.pack(ipadx=5, anchor='n')
+        lframe_parameters.pack(padx=(0,5), anchor='n')
 
         frame_ants_nbr = tb.LabelFrame(lframe_parameters, text="Number of ants")
         frame_ants_nbr.pack(pady=10)
@@ -285,8 +286,8 @@ class App():
         self.label_nest_in_extr.config(text="No")
         self.label_iteration.config(text="0")
         func_data = self.TEST_FUNCTIONS[self.test_function_var.get()]
-        self.label_nest_pos.config(text="None")
-        self.label_func_extr.config(text=f'x: {func_data['extremum_x']};  y: {func_data['extremum_y']};  z: {func_data['extremum_val']}')
+        self.label_nest_pos.config(text="None\n\n o")
+        self.label_func_extr.config(text=f'x: {func_data['extremum_x']}\ny: {func_data['extremum_y']}\nz: {func_data['extremum_val']}')
         self.exit_event.set()
         if not without_plot:
             self.update_plot()
@@ -367,7 +368,7 @@ class App():
             self.anthill.move_nest()
             self.move_nest(*self.anthill.nest)
             nx, ny, nz = self.anthill.nest
-            self.label_nest_pos.config(text=f'x: {round(nx, 5)};  y: {round(ny, 5)};  z: {round(nz, 5)}')
+            self.label_nest_pos.config(text=f'x: {round(nx, 5)}\ny: {round(ny, 5)}\nz: {round(nz, 5)}')
             self.label_nest_pos.update()
             self.canvas.draw_idle()
             iteration += 1            
@@ -421,8 +422,8 @@ class App():
         chosen_func = self.test_function_var.get()
         print('chosen func: ' + chosen_func)
         func_data = self.TEST_FUNCTIONS[chosen_func]
-        self.label_func_extr.config(text=f'x: {func_data['extremum_x']};  y: {func_data['extremum_y']};  z: {func_data['extremum_val']}')        
-        self.label_nest_pos.config(text="None")
+        self.label_func_extr.config(text=f'x: {func_data['extremum_x']}\ny: {func_data['extremum_y']}\nz: {func_data['extremum_val']}')        
+        self.label_nest_pos.config(text="None\n\n")
         try: self.ax_3d.clear()
         except: pass
         try: self.ax.remove()
