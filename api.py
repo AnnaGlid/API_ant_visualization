@@ -138,7 +138,12 @@ class Anthill():
                     best_spot = spot
                     best_spot_val = spot.z
         if best_spot:
-            self.nest = [best_spot.x, best_spot.y, best_spot.z]
+            if (self.extremum_type == 'min' and best_spot.z < self.nest[2]) or \
+                (self.extremum_type == 'max' and best_spot.z > self.nest[2]):
+                print(f'best spot: {best_spot.z}, nest: {self.nest[2]}')
+                self.nest = [best_spot.x, best_spot.y, best_spot.z]            
+            else:
+                print('Did not find better nest than previous!')
         else:
             print('Did not find best spot!')
 

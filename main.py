@@ -19,8 +19,6 @@ from api import Anthill
 
 # tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
 
-# w przypadku gdy mrówka wylatuje poza dziedzinę, to odbicie lustrzane
-
 def rastrigin(x: float|np.ndarray, y: float|np.ndarray):
     return 10*2 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))  
 
@@ -273,8 +271,7 @@ class App():
         self.btn_stop = tb.Button(lframe_parameters, text="Stop", takefocus=False, width=10, 
                                   command=self.pause, style='danger')        
         #endregion
-        self.dots = None
-        self.reset_parameters(without_plot = True)
+        self.dots = None        
         #region plot
         self.fig_dist = Figure(figsize = (11, 2), dpi = 100)                                   
         self.canvas_dist = FigureCanvasTkAgg(self.fig_dist, master=frame_plot_dist)
@@ -286,6 +283,7 @@ class App():
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_plot_func)
         self.toolbar = NavigationToolbar2Tk(self.canvas, frame_plot_func)      
         #endregion
+        self.reset_parameters(without_plot = True)
         self.update_plot()        
         self.root.mainloop()        
 
@@ -305,9 +303,11 @@ class App():
         self.label_nest_pos.config(text="None\n\n o")
         self.label_func_extr.config(text=f'x: {func_data['extremum_x']}\ny: {func_data['extremum_y']}\nz: {func_data['extremum_val']}')
         self.exit_event.set()
+        self.dist_values = []
+        self.plot_dist.clear()
+        # self.canvas_dist.draw()
         if not without_plot:
             self.update_plot()
-        self.dist_values = []
 
     def run(self):
         self.plot_dist.clear()
@@ -390,6 +390,7 @@ class App():
             self.label_nest_pos.config(text=f'x: {round(nx, 5)}\ny: {round(ny, 5)}\nz: {round(nz, 5)}')
             self.label_nest_pos.update()
             self.canvas.draw_idle()
+            print('Iteration: '+str(iteration))
             iteration += 1            
             self.label_iteration.config(text=str(iteration))     
             self.label_iteration.update()                      
@@ -462,6 +463,7 @@ class App():
         self.canvas.get_tk_widget().pack()
         self.dist_values = []
         self.plot_dist.clear()
+        self.canvas_dist.draw()
 
     def show_nest(self, x, y, z):
         self.nest_mark, = self.ax.plot(x, y, color='r', marker='X', markersize=13, zorder=10)
