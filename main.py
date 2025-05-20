@@ -13,10 +13,6 @@ from api import Anthill
 # Czy pozwalać na zmianę parametrów dla shekela i perma? Nie - jakie parametry?
 # shekel - jaki wzór? Jak ma wyglądać macierz, jak ją obliczyć?
 
-
-# dodać pamięć globalną, która pamięta i porównuje kolejne położenia gniazda
-# (i nie zmienia na gorsze)
-
 # tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
 
 def rastrigin(x: float|np.ndarray, y: float|np.ndarray):
