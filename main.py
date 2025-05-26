@@ -10,9 +10,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from api import Anthill
 
-# Czy pozwalać na zmianę parametrów dla shekela i perma? Nie - jakie parametry?
-# shekel - jaki wzór? Jak ma wyglądać macierz, jak ją obliczyć?
-
 # tabelka: funckja, wartości parametrów, iteracja w której osiągnięto optimum / odległość od optimum
 
 def rastrigin(x: float|np.ndarray, y: float|np.ndarray):
@@ -46,6 +43,23 @@ def perm(x: float|np.ndarray, y: float|np.ndarray):
     return ((1 + b)*(x**1 - (1/1)**1) + (2 + b)*(y**1 - (1/2)**1) )**2 \
         +  ((1 + b)*(x**2 - (1/1)**2) + (2 + b)*(y**2 - (1/2)**2) )**2
 
+def sheckel(x: float|np.ndarray, y: float|np.ndarray):
+    C = np.array([
+        [4, 1, 8, 6, 3],
+        [4, 1, 8, 6, 7]
+    ])    
+    B = np.array([1/10, 2/10, 2/10, 4/10, 4/10])
+
+    result = np.zeros_like(x, dtype=np.float64)
+
+    for i in range(len(B)):
+        xi = C[0, i]
+        yi = C[1, i]
+        result += 1.0 / ((x - xi)**2 + (y - yi)**2 + B[i])
+
+    return -result
+        
+
 class App():
 
     ELEMENTS = 100    
@@ -59,9 +73,6 @@ class App():
             'domain_max': 5.12,
             'func': sferic          
         },
-        # "Shekel's foxholes": {
-  
-        # },
         "Perm's f.": {
             'type': 'min',
             'extremum_val': 0,
@@ -133,6 +144,15 @@ class App():
             'domain_min': -600,
             'domain_max': 600,
             'func': griewank
+        },
+        "Shekel's foxholes": {
+            'type': 'min',
+            'extremum_val': -10.1532,
+            'extremum_x': 4,
+            'extremum_y': 4,
+            'domain_min': 0,
+            'domain_max': 10,
+            'func': sheckel
         }
     } 
 
