@@ -38,10 +38,10 @@ def ackley(x: float|np.ndarray, y: float|np.ndarray):
 def griewank(x: float|np.ndarray, y: float|np.ndarray):
     return ((x**2 + y**2)/4000) - (np.cos(x) * np.cos(y / np.sqrt(2))) + 1
 
-def perm(x: float|np.ndarray, y: float|np.ndarray):
-    b = 10
-    return ((1 + b)*(x**1 - (1/1)**1) + (2 + b)*(y**1 - (1/2)**1) )**2 \
-        +  ((1 + b)*(x**2 - (1/1)**2) + (2 + b)*(y**2 - (1/2)**2) )**2
+def perm(x: float|np.ndarray, y: float|np.ndarray): 
+    b = 0.5
+    return ((1 + b)*(x - 1) + (2 + b)*(y/2 - 1 ))**2 \
+        +  ((1 + b)*(x**2 - 1) + (4 + b)*((y/2)**2 - 1) )**2    
 
 def sheckel(x: float|np.ndarray, y: float|np.ndarray):
     C = np.array([
@@ -77,9 +77,9 @@ class App():
             'type': 'min',
             'extremum_val': 0,
             'extremum_x': 1,
-            'extremum_y': 0.5,
-            'domain_min': -1,
-            'domain_max': 1,
+            'extremum_y': 2,
+            'domain_min': -2,
+            'domain_max': 2,
             'func': perm      
         },
         "Rosenbrock's f.": {
@@ -160,7 +160,7 @@ class App():
     for func_name, val in TEST_FUNCTIONS.items():
         TEST_FUNCTIONS[func_name]['x'] = np.linspace(val['domain_min'], val['domain_max'], ELEMENTS)
         TEST_FUNCTIONS[func_name]['y'] = np.linspace(val['domain_min'], val['domain_max'], ELEMENTS)
-        f_X, f_Y = np.meshgrid(TEST_FUNCTIONS[func_name]['x'], TEST_FUNCTIONS[func_name]['y'])
+        f_X, f_Y = np.meshgrid(TEST_FUNCTIONS[func_name]['x'], TEST_FUNCTIONS[func_name]['y'], indexing='xy')
         TEST_FUNCTIONS[func_name]['X'] = f_X
         TEST_FUNCTIONS[func_name]['Y'] = f_Y
         TEST_FUNCTIONS[func_name]['Z'] = val['func'](f_X, f_Y)
@@ -241,7 +241,7 @@ class App():
         self.input_ant_moves = tb.Entry(frame_ant_moves, width=10)
         self.input_ant_moves.pack(padx=10, pady=5) 
 
-        frame_a_site = tb.LabelFrame(lframe_parameters, text="A site")
+        frame_a_site = tb.LabelFrame(lframe_parameters, text="A site parameter")
         frame_a_site.pack(pady=10)
         self.input_a_site = tb.Entry(frame_a_site, width=10)
         self.input_a_site.pack(padx=10, pady=5) 
@@ -304,12 +304,12 @@ class App():
         self.root.mainloop()        
 
     def reset_parameters(self, without_plot: bool = False):        
-        self.set_text(self.input_ants_nbr, '20')
+        self.set_text(self.input_ants_nbr, '3000')
         self.set_text(self.input_ant_memory, '2')
         self.set_text(self.input_ant_moves, '5')
-        self.set_text(self.input_a_site, '0.010')
+        self.set_text(self.input_a_site, '0.01')
         self.set_text(self.input_a_local, '10')
-        self.set_text(self.input_failed, '5')
+        self.set_text(self.input_failed, '6')
         self.label_nest_dist.config(text="None")
         self.test_function_var.set(list(self.TEST_FUNCTIONS)[0])
         self.speed_val.set(10)
@@ -385,7 +385,7 @@ class App():
     def run_algorithm(self):        
         print('Run algorithm')        
         now = time.time()
-        timeout = now + 60*10        
+        timeout = now + 60*30
         iteration = 0
         time.sleep(1)
         nest_in_extr = False
@@ -403,7 +403,10 @@ class App():
             self.anthill.move_nest()
             self.move_nest(*self.anthill.nest)
             nx, ny, nz = self.anthill.nest
-            self.label_nest_pos.config(text=f'x: {round(nx, 5)}\ny: {round(ny, 5)}\nz: {round(nz, 5)}')
+            x_str = round(nx, 5) if 'e' not in str(nx) else format(nx, '.3e')   
+            y_str = round(ny, 5) if 'e' not in str(ny) else format(ny, '.3e') 
+            z_str = round(nz, 5) if 'e' not in str(nz) else format(nz, '.3e') 
+            self.label_nest_pos.config(text=f'x: {x_str}\ny: {y_str}\nz: {z_str}')
             self.label_nest_pos.update()
             self.canvas.draw_idle()
             print('Iteration: '+str(iteration))
@@ -493,7 +496,7 @@ class App():
         self.nest_mark.set_data(x, y)
         curr_distance = self.anthill.get_dist_from_optimum()
         self.dist_values.append(curr_distance)
-        self.label_nest_dist.config(text=str(round(curr_distance, 5)))
+        self.label_nest_dist.config(text=str(round(curr_distance, 5)) if 'e' not in str(curr_distance) else format(curr_distance, '.3e'))
         self.plot_dist.plot(self.dist_values)
         self.canvas_dist.draw()
 

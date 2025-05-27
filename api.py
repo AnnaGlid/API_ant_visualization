@@ -31,7 +31,7 @@ class Ant():
 
     def set_current_spot(self, spot: Spot):
         self.current_spot = spot
-        self.pos = [spot.x, spot.y]
+        self.pos = [spot.x, spot.y, spot.z]
 
     def find_new_spot(self):
         x, y = self.q_explo(self.my_a_site)
@@ -153,8 +153,8 @@ class Anthill():
 
     def tandem_run(self, ant_a: Ant, ant_b: Ant):
         if self.extremum_type == 'min':
-            min_a = min(place.z for place in ant_a.memory if place)
-            min_b = min(place.z for place in ant_b.memory if place)
+            min_a = min(place.z for place in ant_a.memory if place) if any(ant_a.memory) else 9999999999999999999
+            min_b = min(place.z for place in ant_b.memory if place) if any(ant_b.memory) else 9999999999999999999
             if min_a < min_b:
                 best_place = next(filter(lambda x: x and x.z == min_a, ant_a.memory))
                 place_to_replace = next(filter(lambda x: x and x.z == min_b, ant_b.memory))
